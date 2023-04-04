@@ -1,11 +1,12 @@
 for (dog of dogs) {
-    //create one div with class card for every dog
+    //create one div with classes 'col d-flex align-items-stretch' and another one inside it with class card for every dog + append to resultsList
     let resultsList = document.getElementById('resultsList');
     let colDiv = document.createElement('div');
+    colDiv.classList.add('col');    //adding classes 'd-flex' (and 'align-items-stretch'?) makes all cards the same height, but then they all open, when you only want to open one with "show more"
     resultsList.appendChild(colDiv);
     let card = document.createElement('div');
     card.classList.add('card');
-    card.style.width = '18rem';
+    //card.style.width = '18rem';
     colDiv.appendChild(card);
 
     //put img of dog inside card and add card-img-top class + alt
@@ -17,19 +18,25 @@ for (dog of dogs) {
     
     //put another div with class card-body inside card
     let cardBody = document.createElement('div');
-    cardBody.classList.add('card-body');
+    cardBody.classList.add('card-body', 'd-flex', 'flex-column', 'justify-content-between');
     card.appendChild(cardBody);
     //cardBody.innerHTML = "doggy love";
 
+    //create div for h5 and card text (needed to adjust text & button with flex later)
+
+    let cardText = document.createElement('div');
+    cardText.style.height = '10rem';            //this makes all cardTexts the same height (since img and buttons are same height as well, all cards are now equal-sized, except when show more was clicked)
+    cardBody.appendChild(cardText);
+    
     //put h5 with dog breed's name in cardBody
     let cardTitle = document.createElement('h5');
     cardTitle.classList.add('card-title');
     cardTitle.innerText = dog.name;
-    cardBody.appendChild(cardTitle);
+    cardText.appendChild(cardTitle);
 
     //put p with some text inside cardBody
     //since there is no description text in api data, let's put sth together
-    let cardText = document.createElement('p');
+    let cardDescription = document.createElement('p');
     let size = '';
     function averageWeight(){
         return (dog.min_weight_female+dog.max_weight_female+dog.min_weight_male+dog.max_weight_male)/4
@@ -46,8 +53,8 @@ for (dog of dogs) {
     } else if (averageWeight() >= 100) {
         size = 'giant';
     }
-    cardText.innerText = `The ${dog.name} is a ${size} dog with a life expectancy of ${dog.min_life_expectancy} - ${dog.max_life_expectancy} years.`;
-    cardBody.appendChild(cardText);
+    cardDescription.innerText = `The ${dog.name} is a ${size} dog with a life expectancy of ${dog.min_life_expectancy} - ${dog.max_life_expectancy} years.`;
+    cardText.appendChild(cardDescription);
 
     //create div container for button, make it flex + justify-content: center
     let buttonContainer = document.createElement('div');
@@ -68,6 +75,7 @@ for (dog of dogs) {
     let cardBodyOptional = document.createElement('div');
     card.appendChild(cardBodyOptional);
 
+  
 
     //create eventHandlerFunction:
     function showMore() {
@@ -75,9 +83,9 @@ for (dog of dogs) {
     if (showMoreButton.innerText === "Show More") {
 
     //create ul to list characteristics and append to card
-    let listGroup = document.createElement('ul');
-    listGroup.classList.add('list-group', 'list-group-flush')
-    cardBodyOptional.appendChild(listGroup);
+        let listGroup = document.createElement('ul');
+        listGroup.classList.add('list-group', 'list-group-flush')
+        cardBodyOptional.appendChild(listGroup);
 
     //create li elements with class 'list-group-item' and append to listGroup (ul)
     //let's DRY & write another for loop for that ;-)
@@ -126,11 +134,11 @@ for (dog of dogs) {
         pawRating.classList.add('paw-rating');
         flexContainer.appendChild(pawRating);
         }
-
+    }
     //change button text to "SHOW LESS" and change its color when clicked:
     showMoreButton.innerText = "Show Less";
     showMoreButton.setAttribute('class', 'btn btn-secondary');
-    }
+
     } else {
         showMoreButton.innerText = "Show More";
         showMoreButton.setAttribute('class', 'btn btn-primary');
