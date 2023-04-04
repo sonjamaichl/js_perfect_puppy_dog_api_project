@@ -47,26 +47,35 @@ for (dog of dogs) {
     cardText.innerText = `The ${dog.name} is a ${size} dog with a life expectancy of ${dog.min_life_expectancy} - ${dog.max_life_expectancy} years.`;
     cardBody.appendChild(cardText);
 
-    //INSERT SHOW MORE BUTTON HERE + append to cardBody(?)
+    //create div container for button, make it flex + justify-content: center
+    let buttonContainer = document.createElement('div');
+    buttonContainer.style.display = "flex";
+    buttonContainer.style.flexDirection = "row";
+    buttonContainer.style.justifyContent = "center";
+    cardBody.appendChild(buttonContainer);
+
+
+    //INSERT SHOW MORE BUTTON HERE + append to button container
     let showMoreButton = document.createElement('button');
     showMoreButton.innerText = "Show More";
     showMoreButton.type = "button";
     showMoreButton.classList.add('btn', 'btn-primary');
-    cardBody.appendChild(showMoreButton);
+    buttonContainer.appendChild(showMoreButton);
 
-
+    //create second part of cardBody that can be accessed by clicking show more button
+    let cardBodyOptional = document.createElement('div');
+    card.appendChild(cardBodyOptional);
 
 
     //create eventHandlerFunction:
     function showMore() {
-        
-    }
-    
+
+    if (showMoreButton.innerText === "Show More") {
 
     //create ul to list characteristics and append to card
     let listGroup = document.createElement('ul');
     listGroup.classList.add('list-group', 'list-group-flush')
-    card.appendChild(listGroup);
+    cardBodyOptional.appendChild(listGroup);
 
     //create li elements with class 'list-group-item' and append to listGroup (ul)
     //let's DRY & write another for loop for that ;-)
@@ -112,12 +121,23 @@ for (dog of dogs) {
         }
         pawRating.src = getPawRatingSrc(value);
         pawRating.alt = `${value} out of 5 paws`;
-        pawRating.style.maxWidth = '35%';
-        pawRating.style.paddingBottom = '1.1rem';
+        pawRating.classList.add('paw-rating');
         flexContainer.appendChild(pawRating);
         }
-      }
+
+          //change button text to "SHOW LESS" when button has been clicked:
+
+     showMoreButton.innerText = "Show Less";
     }
+    } else {
+        showMoreButton.innerText = "Show More";
+        cardBodyOptional.innerHTML = '';
+    }
+    }
+
+    showMoreButton.addEventListener('click', showMore);
+}
+
 
 
 /*

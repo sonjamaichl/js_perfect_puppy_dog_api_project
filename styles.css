@@ -4,3 +4,16 @@
     justify-content: space-between;
     align-items: center;
 }
+
+li {
+    list-style-type: none;
+    padding-top: 0.5rem;
+    padding-left: 0.75rem;
+}
+
+.paw-rating {
+    max-width: 37%;
+    padding-bottom: 1rem;
+    padding-right: 0.25rem;
+
+}
