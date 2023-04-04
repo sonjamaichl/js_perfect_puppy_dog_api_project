@@ -1,10 +1,12 @@
 for (dog of dogs) {
     //create one div with class card for every dog
     let resultsList = document.getElementById('resultsList');
+    let colDiv = document.createElement('div');
+    resultsList.appendChild(colDiv);
     let card = document.createElement('div');
     card.classList.add('card');
     card.style.width = '18rem';
-    resultsList.appendChild(card);
+    colDiv.appendChild(card);
 
     //put img of dog inside card and add card-img-top class + alt
     let newImg = document.createElement('img');
@@ -125,12 +127,13 @@ for (dog of dogs) {
         flexContainer.appendChild(pawRating);
         }
 
-          //change button text to "SHOW LESS" when button has been clicked:
-
-     showMoreButton.innerText = "Show Less";
+    //change button text to "SHOW LESS" and change its color when clicked:
+    showMoreButton.innerText = "Show Less";
+    showMoreButton.setAttribute('class', 'btn btn-secondary');
     }
     } else {
         showMoreButton.innerText = "Show More";
+        showMoreButton.setAttribute('class', 'btn btn-primary');
         cardBodyOptional.innerHTML = '';
     }
     }
