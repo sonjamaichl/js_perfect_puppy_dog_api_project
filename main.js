@@ -3,7 +3,7 @@ for (dog of dogs) {
     let resultsList = document.getElementById('resultsList');
     let card = document.createElement('div');
     card.classList.add('card');
-    card.style.width = '81 rem';
+    card.style.width = '18rem';
     resultsList.appendChild(card);
 
     //put img of dog inside card and add card-img-top class + alt
@@ -47,6 +47,21 @@ for (dog of dogs) {
     cardText.innerText = `The ${dog.name} is a ${size} dog with a life expectancy of ${dog.min_life_expectancy} - ${dog.max_life_expectancy} years.`;
     cardBody.appendChild(cardText);
 
+    //INSERT SHOW MORE BUTTON HERE + append to cardBody(?)
+    let showMoreButton = document.createElement('button');
+    showMoreButton.innerText = "Show More";
+    showMoreButton.type = "button";
+    showMoreButton.classList.add('btn', 'btn-primary');
+    cardBody.appendChild(showMoreButton);
+
+
+
+
+    //create eventHandlerFunction:
+    function showMore() {
+        
+    }
+    
 
     //create ul to list characteristics and append to card
     let listGroup = document.createElement('ul');
@@ -74,15 +89,39 @@ for (dog of dogs) {
         if(key ===  "image_link" || key === "min_life_expectancy" || key === "max_life_expectancy" || key === "max_height_male" || key === "max_height_female" || key === "max_weight_female" || key === "max_weight_male" || key === "min_height_male" || key === "min_height_male" || key === "min_height_female" || key === "min_weight_male" || key === "min_weight_female" || key === "name"){
             continue;
         } else {
+    //create one li element for every key-value pair
         let listGroupItem = document.createElement('li');
-        listGroupItem.innerHTML = `${nicerText(key)}: ${value}/5`;
         listGroup.appendChild(listGroupItem);
+
+    //create a div tag inside the li and give it class "flex-container" + append to li
+        let flexContainer = document.createElement('div');
+        flexContainer.classList.add('flex-container');
+        listGroupItem.appendChild(flexContainer);
+
+    //create a p-tag inside the flex-container div and append
+        let characterTrait = document.createElement('p');
+        characterTrait.innerText = `${nicerText(key)}: `;
+        flexContainer.appendChild(characterTrait);
+              //listGroupItem.innerHTML = `${nicerText(key)}: ${value}/5`;
+                //listGroupItem.innerHTML = `${nicerText(key)}: `;
+
+    //create an img-tag inside the flex-container div and append
+        let pawRating = document.createElement('img');
+        function getPawRatingSrc(value) {
+            return `./resources/img/paws/${value}_paws.svg`
+        }
+        pawRating.src = getPawRatingSrc(value);
+        pawRating.alt = `${value} out of 5 paws`;
+        pawRating.style.maxWidth = '35%';
+        pawRating.style.paddingBottom = '1.1rem';
+        flexContainer.appendChild(pawRating);
         }
       }
     }
 
 
 /*
+Bootstrap Card:
 <div class="card" style="width: 18rem;">
   <img src="..." class="card-img-top" alt="...">
   <div class="card-body">
