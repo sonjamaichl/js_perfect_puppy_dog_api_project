@@ -16,6 +16,14 @@
     <div class="container">
     <h1>Perfect Puppy</h1>
     <p>Find your furry friend based on the breed's characteristics. Check it out, it's really pawsome!</p>
+    <nav class="navbar bg-body-tertiary">
+      <div class="container-fluid">
+        <form class="d-flex" role="search">
+          <input class="form-control me-2" type="search" name="q" id="search-input" placeholder="Golden Retriever" aria-label="Search">
+          <button class="btn btn-outline-success" type="submit" name="search-submit" id="search-submit">Search</button>
+        </form>
+      </div>
+    </nav>
     <div id="resultsList" class="row g-3 row-cols-1 row-cols-sm-2 row-cols-md-3 row-cols-lg-4">
       <!-- responsive hybrid grid: smartphone => 1 col, small display => 2, medium => 3 large or more => 4
             g-3 adds gutter space between rows (values 1-5 possible)-->

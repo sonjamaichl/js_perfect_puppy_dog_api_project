@@ -1,6 +1,4 @@
-const url = "https://api.api-ninjas.com/v1/dogs?name=retriever";
-
-let dogs = [];
+let url = "https://api.api-ninjas.com/v1/dogs?name=retriever";
 
 function getData(url) {
     fetch(url, {
@@ -18,6 +16,7 @@ function getData(url) {
 }
 
 getData(url);
+
 
 
 function showResults(dogs){
@@ -203,8 +202,8 @@ Bootstrap Card:
 
 //to do:
 
-// 1) add heart icon and like feature (use local storage to save the user's likes)
-// 2) use fetch to actually get data from api instead of saved file
+// 1) make dynamic search work: get value from search box, then create a function that returns a string in form of "url + value of search input" ==> url for request, then update showResults()/getData() ==> use newly created url instead of hardcoded one in let url...
+// 2) add heart icon and like feature (use local storage to save the user's likes)
 // 3) add filters
 // 4) add navbar and more pages
 // 5) add puppy logo and maybe background image or color
