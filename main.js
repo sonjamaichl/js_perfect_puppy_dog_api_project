@@ -176,3 +176,11 @@ Bootstrap Card:
   </div>
 </div>
 */
+
+//to do:
+
+// 1) add heart icon and like feature (use local storage to save the user's likes)
+// 2) use fetch to actually get data from api instead of saved file
+// 3) add filters
+// 4) add navbar and more pages
+// 5) add puppy logo and maybe background image or color
