@@ -1,3 +1,26 @@
+const url = "https://api.api-ninjas.com/v1/dogs?name=retriever";
+
+let dogs = [];
+
+function getData(url) {
+    fetch(url, {
+        method: "GET",
+        headers: {
+          "X-API-Key": "qwIGzCw6xnboQDmPHxp2wQ==7CP90HowwDVCSr2d",
+        }
+     })
+        .then(response => response.json())
+        .then(result => {
+            const dogs = result;
+            showResults(dogs);
+        })
+        .catch(err => console.log("oopsies... couldn't fetch data from api"))
+}
+
+getData(url);
+
+
+function showResults(dogs){
 for (dog of dogs) {
 //create one div with classes 'col d-flex align-items-stretch' and another one inside it with class card for every dog + append to resultsList
     let resultsList = document.getElementById('resultsList');
@@ -152,6 +175,7 @@ cardBodyOptional.appendChild(listGroup);
         cardBodyOptional.style.display = "none";
     }
     }
+}
 }
 
 

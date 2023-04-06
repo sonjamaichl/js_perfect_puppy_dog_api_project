@@ -1,4 +1,4 @@
-let dogs =[
+let oldDogs =[
     {
         "image_link": "https://api-ninjas.com/images/dogs/affenpinscher.jpg",
         "good_with_children": 3,
