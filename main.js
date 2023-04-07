@@ -2,7 +2,7 @@ let basicURL = "https://api.api-ninjas.com/v1/dogs?name=";
 
 //function to get the input from search bar
 function getSearchInput() {
-    let searchInput = document.getElementById('searchInput').value;
+    let searchInput = document.getElementById('searchInput').value.toLowerCase();
     return searchInput;
 }
 
@@ -224,7 +224,7 @@ Bootstrap Card:
 
 //to do:
 
-// 1) write function to format search input before passing it to getURL: all lowercase (and with space between words), what about typos?
+// 1) add functionality to enter key (should trigger showResults() as well!)
 // 2) update showResults so that it displays a "sorry, nothing found" message in case there are no search results (otherwise user doesn't know, that search has actually been finished with 0 results)
 // 3) clean up code!!! would be nice to have some sort of structure here...
 // 4) add heart icon and like feature (use local storage to save the user's likes => red heart + display on favorites page?)
