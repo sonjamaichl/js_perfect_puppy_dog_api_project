@@ -1,4 +1,26 @@
-let url = "https://api.api-ninjas.com/v1/dogs?name=retriever";
+let basicURL = "https://api.api-ninjas.com/v1/dogs?name=";
+
+//function to get the input from search bar
+function getSearchInput() {
+    let searchInput = document.getElementById('searchInput').value;
+    return searchInput;
+}
+
+//function to create search URL according to user input
+function getURL(func){
+    return basicURL + func();
+}
+
+//adding event listener to search button that triggers getSearchInput when clicking it
+let searchButton = document.getElementById('searchButton');
+searchButton.addEventListener('click', showResults);
+
+//function to show the search results
+
+function showResults() {
+    document.getElementById('resultsList').innerText = '';
+    getData(getURL(getSearchInput));
+}
 
 function getData(url) {
     fetch(url, {
@@ -10,16 +32,16 @@ function getData(url) {
         .then(response => response.json())
         .then(result => {
             const dogs = result;
-            showResults(dogs);
+            createCards(dogs);
         })
         .catch(err => console.log("oopsies... couldn't fetch data from api"))
 }
 
-getData(url);
+//getData(url);
 
 
 
-function showResults(dogs){
+function createCards(dogs){
 for (dog of dogs) {
 //create one div with classes 'col d-flex align-items-stretch' and another one inside it with class card for every dog + append to resultsList
     let resultsList = document.getElementById('resultsList');
@@ -202,7 +224,7 @@ Bootstrap Card:
 
 //to do:
 
-// 1) make dynamic search work: get value from search box, then create a function that returns a string in form of "url + value of search input" ==> url for request, then update showResults()/getData() ==> use newly created url instead of hardcoded one in let url...
+// 1) clean up code!!! would be nice to have some sort of structure here...
 // 2) add heart icon and like feature (use local storage to save the user's likes)
 // 3) add filters
 // 4) add navbar and more pages
