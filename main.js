@@ -224,8 +224,10 @@ Bootstrap Card:
 
 //to do:
 
-// 1) clean up code!!! would be nice to have some sort of structure here...
-// 2) add heart icon and like feature (use local storage to save the user's likes)
-// 3) add filters
-// 4) add navbar and more pages
-// 5) add puppy logo and maybe background image or color
+// 1) write function to format search input before passing it to getURL: all lowercase (and with space between words), what about typos?
+// 2) update showResults so that it displays a "sorry, nothing found" message in case there are no search results (otherwise user doesn't know, that search has actually been finished with 0 results)
+// 3) clean up code!!! would be nice to have some sort of structure here...
+// 4) add heart icon and like feature (use local storage to save the user's likes => red heart + display on favorites page?)
+// 5) add filters
+// 6) add navbar and more pages
+// 7) add puppy logo and maybe background image or color
