@@ -107,7 +107,7 @@ for (dog of dogs) {
     }
     
     //put description text together and append to cardText
-    cardDescription.innerText = `The ${dog.name} is a ${size} dog with a life expectancy of ${dog.min_life_expectancy} - ${dog.max_life_expectancy} years.`;
+    cardDescription.innerText = (dog.min_life_expectancy === dog.max_life_expectancy)? `The ${dog.name} is a ${size} dog with a life expectancy of about ${dog.min_life_expectancy} years.` : `The ${dog.name} is a ${size} dog with a life expectancy of ${dog.min_life_expectancy} - ${dog.max_life_expectancy} years.`;
     cardText.appendChild(cardDescription);
 
 //create div container for button, make it flex + justify-content: center
@@ -236,6 +236,7 @@ Bootstrap Card:
 // 2) update showResults so that it displays a "sorry, nothing found" message in case there are no search results (otherwise user doesn't know, that search has actually been finished with 0 results)
 // 3) clean up code!!! would be nice to have some sort of structure here...
 // 4) add heart icon and like feature (use local storage to save the user's likes => red heart + display on favorites page?)
-// 5) add filters
-// 6) add navbar and more pages
+// 5) add filters for character traits
+// 6) add navbar and more pages (one to save favorites would be nice)
 // 7) add puppy logo and maybe background image or color
+// 8) add a fun easter egg (display random dog fact when clicking certain element or sth like that)
