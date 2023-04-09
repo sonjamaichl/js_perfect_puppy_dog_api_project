@@ -1,17 +1,16 @@
 let basicURL = "https://api.api-ninjas.com/v1/dogs?name=";
 let offset = 0;
 let dogs = [];
-let searchWord = '';
 
 //function to get the input from search bar
 function getSearchInput() {
-    searchInput = document.getElementById('searchInput').value.toLowerCase();
+    let searchInput = document.getElementById('searchInput').value;
     return searchInput;
 }
 
 //function to create search URL according to user input
 function getURL(func){
-    return basicURL + func() + "&offset=" + offset;
+    return basicURL + func().toLowerCase() + "&offset=" + offset;
 }
 
 //adding event listener to search button that triggers getSearchInput when clicking it
@@ -54,7 +53,7 @@ function getData(url) {
             if (newDogs.length === 20) {
                 //console.log('more than 20 results found, fetching again')
                 offset +=20;
-                getData(getURL(getSearchInput));           //making getData() recursive so we can get more than 20 results for each search
+                getData(getURL(getSearchInput));           //making getData() recursive so we can get more than 20 results for each search (with multiple requests)
             } else {
                 offset = 0;
             createCards(dogs);
@@ -63,9 +62,22 @@ function getData(url) {
         .catch(err => console.log("oopsies... couldn't fetch data from api"))
 }
 
-//getData(url);
-
+//function to create and display one card for each dog in list of results (dogs)
 function createCards(dogs){
+      //displaying message to user to let them know if and how many results were found
+      let searchMessage = document.getElementById('searchMessage');
+      if (dogs.length === 0) {
+          searchMessage.innerText = `Sorry, no results found for "${getSearchInput()}".`
+          searchMessage.setAttribute('class', 'alert alert-secondary');
+          //searchMessage.setAttribute('role', 'alert');   
+      } else {
+          searchMessage.innerText = (dogs.length === 1)? `${dogs.length} result found for "${getSearchInput()}":` : `${dogs.length} results found for "${getSearchInput()}":`;
+          searchMessage.setAttribute('class', 'alert alert-success');
+          searchMessage.setAttribute('role', 'alert');  
+      }
+      
+
+//start loop
 for (dog of dogs) {
 //create one div with classes 'col d-flex align-items-stretch' and another one inside it with class card for every dog + append to resultsList
     let resultsList = document.getElementById('resultsList');
@@ -248,11 +260,11 @@ Bootstrap Card:
 
 //to do:
 
-// 1) add message when serach is successfully finished ("x results found for "searchInput" or sth like that)
-// 2) update showResults so that it displays a "sorry, nothing found" message in case there are no search results (otherwise user doesn't know, that search has actually been finished with 0 results)
+// 1) add show all button & function? 
+// 2) add filters for character traits (+ sort functionality?)
 // 3) clean up code!!! would be nice to have some sort of structure here...
 // 4) add heart icon and like feature (use local storage to save the user's likes => red heart + display on favorites page?)
-// 5) add filters for character traits (+ sort functionality?)
-// 6) add navbar and more pages (one to save favorites would be nice)
+// 5) add navbar and more pages (one to save favorites would be nice)
+// 6) add filters for character traits (+ sort options?)
 // 7) add puppy logo and maybe background image or color
 // 8) add a fun easter egg (display random dog fact when clicking certain element or sth like that)
