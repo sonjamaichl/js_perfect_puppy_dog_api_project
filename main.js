@@ -1,14 +1,17 @@
 let basicURL = "https://api.api-ninjas.com/v1/dogs?name=";
+let offset = 0;
+let dogs = [];
+let searchWord = '';
 
 //function to get the input from search bar
 function getSearchInput() {
-    let searchInput = document.getElementById('searchInput').value.toLowerCase();
+    searchInput = document.getElementById('searchInput').value.toLowerCase();
     return searchInput;
 }
 
 //function to create search URL according to user input
 function getURL(func){
-    return basicURL + func();
+    return basicURL + func() + "&offset=" + offset;
 }
 
 //adding event listener to search button that triggers getSearchInput when clicking it
@@ -27,8 +30,11 @@ document.getElementById('searchInput').addEventListener('keydown', function(even
 
 function showResults() {
     document.getElementById('resultsList').innerText = '';
+    dogs = [];
     getData(getURL(getSearchInput));
 }
+
+
 
 function getData(url) {
     fetch(url, {
@@ -39,15 +45,25 @@ function getData(url) {
      })
         .then(response => response.json())
         .then(result => {
-            const dogs = result;
+            let newDogs = result;
+            for (newDog of newDogs) {
+                dogs.push(newDog);
+            }
+            console.log('newDogs: '+newDogs, 'newDogs-length: '+newDogs.length)
+            console.log('dogs: '+dogs, 'dogs.length: '+dogs.length)
+            if (newDogs.length === 20) {
+                //console.log('more than 20 results found, fetching again')
+                offset +=20;
+                getData(getURL(getSearchInput));           //making getData() recursive so we can get more than 20 results for each search
+            } else {
+                offset = 0;
             createCards(dogs);
+        }
         })
         .catch(err => console.log("oopsies... couldn't fetch data from api"))
 }
 
 //getData(url);
-
-
 
 function createCards(dogs){
 for (dog of dogs) {
@@ -232,11 +248,11 @@ Bootstrap Card:
 
 //to do:
 
-// 1) add "offset" to URl to get more than 20 results if needed (check API documentation)
+// 1) add message when serach is successfully finished ("x results found for "searchInput" or sth like that)
 // 2) update showResults so that it displays a "sorry, nothing found" message in case there are no search results (otherwise user doesn't know, that search has actually been finished with 0 results)
 // 3) clean up code!!! would be nice to have some sort of structure here...
 // 4) add heart icon and like feature (use local storage to save the user's likes => red heart + display on favorites page?)
-// 5) add filters for character traits
+// 5) add filters for character traits (+ sort functionality?)
 // 6) add navbar and more pages (one to save favorites would be nice)
 // 7) add puppy logo and maybe background image or color
 // 8) add a fun easter egg (display random dog fact when clicking certain element or sth like that)
