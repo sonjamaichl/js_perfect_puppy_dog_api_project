@@ -17,3 +17,15 @@ li {
     padding-right: 0.25rem;
 
 }
+
+#searchMessage {
+    margin-top: 1rem;
+}
+
+.spinner-border {
+    margin: 5rem;
+}
+
+#spinner {
+    display: none;
+}

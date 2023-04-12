@@ -21,11 +21,16 @@
       <div class="container-fluid">
         <form class="d-flex" role="search">
           <input class="form-control me-2" type="search" name="q" id="searchInput" placeholder="Golden Retriever" aria-label="Search">
-          <button class="btn btn-outline-primary" type="button" name="searchButton" id="searchButton">Search</button>
+          <button class="btn btn-outline-primary showResults" type="button" name="searchButton" id="searchButton">Search</button>
         </form>
-        <button type="button" class="btn btn-primary" id="showAll">Show all breeds</button>
+        <button type="button" class="btn btn-primary showResults" id="showAll">Show all breeds</button>
       </div>
     </nav>
+    <div class="d-flex justify-content-center">
+      <div class="spinner-border text-primary" role="status" id="spinner">
+        <span class="visually-hidden">Loading...</span>
+      </div>
+    </div>
     <div id="searchMessage"></div>
    
     <div id="resultsList" class="row g-3 row-cols-1 row-cols-sm-2 row-cols-md-3 row-cols-lg-4">

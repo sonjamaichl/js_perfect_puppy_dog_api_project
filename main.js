@@ -15,9 +15,22 @@ function getURL(func){
     return basicURL + searchParameter + func().toLowerCase() + "&offset=" + offset;
 }
 
-//adding event listener to SEARCH BUTTON that triggers showResults() when clicking it
+//adding event listeners to SEARCH & SHOW ALL button that triggers showResults() with different results depending on value of showAll(true/false)
 let searchButton = document.getElementById('searchButton');
-searchButton.addEventListener('click', showResults);
+let showAllButton = document.getElementById('showAll');
+let showResultsButtons = document.querySelectorAll(".showResults");
+
+for (btn of showResultsButtons){
+btn.addEventListener('click', function(event){
+    if (event.target === showAllButton){
+        showAll = true;
+    } else {
+        showAll = false;
+    }
+    showResults();
+})
+}
+
 
 //adding functionality to ENTER key (same as clicking searchButton)
 document.getElementById('searchInput').addEventListener('keydown', function(event){
@@ -27,30 +40,16 @@ document.getElementById('searchInput').addEventListener('keydown', function(even
     }
 });
 
-//adding event listener to SHOW ALL button that triggers showAllBreeds() with a parameter in the URL that matches all dogs
-let showAllButton = document.getElementById('showAll');
-showAllButton.addEventListener('click', showAllBreeds);
-
-//a function to show all breeds instead of search results
-function showAllBreeds() {
-    showAll = true;
-    document.getElementById('resultsList').innerText = '';
-    dogs = [];
-    getData(getURL(getSearchInput));
-}
-
-
-
 
 //function to show the search results
 
 function showResults() {
-    showAll = false;
+    document.getElementById('spinner').style.display = 'inline-block';
     document.getElementById('resultsList').innerText = '';
+    document.getElementById('searchMessage').style.display = 'none';
     dogs = [];
     getData(getURL(getSearchInput));
 }
-
 
 
 function getData(url) {
@@ -75,19 +74,22 @@ function getData(url) {
             } else {
                 offset = 0;
             createCards(dogs);
+            document.getElementById('spinner').style.display = 'none';
         }
         })
         .catch(err => console.log("oopsies... couldn't fetch data from api"))
 }
 
 //function to create and display one card for each dog in list of results (dogs)
+
 function createCards(dogs){
-      //displaying message to user to let them know if and how many results were found
+
+      //displaying message to user to let them know if and how many results were found ===> should showMessage() be a separated function???
       let searchMessage = document.getElementById('searchMessage');
+      searchMessage.style.display = 'block';    //change to inline-block to make green box around message smaller
       if (dogs.length === 0) {
           searchMessage.innerText = `Sorry, no results found for "${getSearchInput()}".`
-          searchMessage.setAttribute('class', 'alert alert-secondary');
-          //searchMessage.setAttribute('role', 'alert');   
+          searchMessage.setAttribute('class', 'alert alert-secondary');  
       } else {
             if(showAll) {
                 searchMessage.innerText = `${dogs.length} breeds found`;
@@ -283,7 +285,8 @@ Bootstrap Card:
 
 //to do:
 
-// 1) add show all button & function? 
+// 1) add spinner while waiting for results!!!
+// 2) add pagination (for more than 20 results)?
 // 2) add filters for character traits (+ sort functionality?)
 // 3) clean up code!!! would be nice to have some sort of structure here...
 // 4) add heart icon and like feature (use local storage to save the user's likes => red heart + display on favorites page?)
