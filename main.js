@@ -1,23 +1,25 @@
-let basicURL = "https://api.api-ninjas.com/v1/dogs?name=";
+let basicURL = "https://api.api-ninjas.com/v1/dogs?";
 let offset = 0;
 let dogs = [];
+let showAll = false;
 
 //function to get the input from search bar
 function getSearchInput() {
-    let searchInput = document.getElementById('searchInput').value;
+    let searchInput = showAll? "1" : document.getElementById('searchInput').value;
     return searchInput;
 }
 
 //function to create search URL according to user input
 function getURL(func){
-    return basicURL + func().toLowerCase() + "&offset=" + offset;
+    let searchParameter = showAll? "min_height=" : "name=";
+    return basicURL + searchParameter + func().toLowerCase() + "&offset=" + offset;
 }
 
-//adding event listener to search button that triggers getSearchInput when clicking it
+//adding event listener to SEARCH BUTTON that triggers showResults() when clicking it
 let searchButton = document.getElementById('searchButton');
 searchButton.addEventListener('click', showResults);
 
-//adding functionality to enter key (same as clicking searchButton)
+//adding functionality to ENTER key (same as clicking searchButton)
 document.getElementById('searchInput').addEventListener('keydown', function(event){
     if (event.key === "Enter") {
         event.preventDefault();
@@ -25,9 +27,25 @@ document.getElementById('searchInput').addEventListener('keydown', function(even
     }
 });
 
+//adding event listener to SHOW ALL button that triggers showAllBreeds() with a parameter in the URL that matches all dogs
+let showAllButton = document.getElementById('showAll');
+showAllButton.addEventListener('click', showAllBreeds);
+
+//a function to show all breeds instead of search results
+function showAllBreeds() {
+    showAll = true;
+    document.getElementById('resultsList').innerText = '';
+    dogs = [];
+    getData(getURL(getSearchInput));
+}
+
+
+
+
 //function to show the search results
 
 function showResults() {
+    showAll = false;
     document.getElementById('resultsList').innerText = '';
     dogs = [];
     getData(getURL(getSearchInput));
@@ -71,8 +89,13 @@ function createCards(dogs){
           searchMessage.setAttribute('class', 'alert alert-secondary');
           //searchMessage.setAttribute('role', 'alert');   
       } else {
+            if(showAll) {
+                searchMessage.innerText = `${dogs.length} breeds found`;
+            }
+            else {
           searchMessage.innerText = (dogs.length === 1)? `${dogs.length} result found for "${getSearchInput()}":` : `${dogs.length} results found for "${getSearchInput()}":`;
-          searchMessage.setAttribute('class', 'alert alert-success');
+        }
+        searchMessage.setAttribute('class', 'alert alert-success');
           searchMessage.setAttribute('role', 'alert');  
       }
       
