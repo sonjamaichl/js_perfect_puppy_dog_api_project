@@ -119,6 +119,15 @@ for (dog of dogs) {
     newImg.classList.add('card-img-top');
     newImg.alt = dog.name;
     card.appendChild(newImg);
+
+    //adding event listener to newImg to create a larger modal when clicked
+    newImg.addEventListener('click', function(event){
+        let dogImg = event.target;
+        console.log(dogImg.src);
+        showModal(dogImg);
+    });
+
+    //a function to display a modal when picture is clicked
     
 //put another div with class card-body inside card
     let cardBody = document.createElement('div');
@@ -238,7 +247,7 @@ cardBodyOptional.appendChild(listGroup);
 
 
 
-    //create an eventHandlerFunction:
+    //create an eventHandlerFunction:       ==> could exist outside of the loop if event.target is used instead of showMoreButton (rewrite event listener to do that)
 
     function showMore() {
 
@@ -259,6 +268,48 @@ cardBodyOptional.appendChild(listGroup);
     }
 }
 }
+
+//a function to display a modal when clicking on the dog images
+function showModal(img){
+    //creating a black overlay to hide other content behind and put modal on top
+    let overlay = document.createElement('div');
+    overlay.classList.add('overlay', 'modal-content');
+    document.body.appendChild(overlay);
+
+    //adding a div (flex container) and a close button icon (x) inside on top right corner to go back to results (card view)
+     let closeButtonContainer = document.createElement('div');
+     closeButtonContainer.classList.add('close-btn-container'); //class is not working as intended?!
+     overlay.appendChild(closeButtonContainer);
+     let closeButton = document.createElement('img');
+     closeButton.src = 'resources/img/icons8-close.svg';
+     closeButton.alt = "Close";
+     closeButton.ariaLabel = 'Close';
+     closeButton.classList.add('close-btn');
+     closeButtonContainer.appendChild(closeButton);
+
+     //adding eventlistener + eventhandler function to closeIcon
+     closeButton.addEventListener('click', function(){
+        overlay.style.display = 'none';
+     })
+
+    //putting new img inside it:
+    let modalImg = document.createElement('img');
+    modalImg.src = img.src;
+    modalImg.alt = img.alt;
+    modalImg.style.maxWidth = '100%';
+    overlay.appendChild(modalImg);
+
+    //adding text that displays the name of the dog (in case user forgets what they clicked on)
+    let modalText = document.createElement('p');
+    modalText.innerText = img.alt;
+    modalText.style.margin = '1rem';
+    overlay.appendChild(modalText);
+
+
+}
+
+
+
 
 
 

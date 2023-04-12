@@ -29,3 +29,37 @@ li {
 #spinner {
     display: none;
 }
+
+.card-img-top:hover {
+    opacity: 0.7;
+}
+
+.overlay {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    height: 100%;
+    width: 100%;
+    background-color: #fff;
+    position: fixed;
+    top: 0px;
+    z-index: 100;
+}
+
+.close-btn-container {
+    display: flex;
+    width: 729px;
+    max-width: 100%;
+    justify-content: flex-end;
+    align-items: flex-start;
+}
+
+.close-btn {
+    width: 24px;
+    margin-bottom: 0.5rem;
+}
+
+.close-btn:hover {
+    opacity: 0.7;
+}
