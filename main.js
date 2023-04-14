@@ -313,13 +313,14 @@ Bootstrap Card:
 </div>
 */
 
-//to do:
+//to do & ideas:
 // 1) add a tooltip to let user know they will go to wikipedia if they click on the link in the description text
 // 2) add pagination (for more than 20 results)?
-// 2) add filters for character traits (+ sort functionality?)
-// 3) clean up code!!! would be nice to have some sort of structure here...
-// 4) add heart icon and like feature (use local storage to save the user's likes => red heart + display on favorites page?)
-// 5) add navbar and more pages (one to save favorites would be nice)
-// 6) add filters for character traits (+ sort options?)
-// 7) add puppy logo and maybe background image or color
-// 8) add a fun easter egg (display random dog fact when clicking certain element or sth like that)
+// 3) add filters for character traits (+ sort functionality?)
+// 4) add additional pictures from different api?!
+// 5) clean up code!!! would be nice to have some sort of structure here...
+// 6) add heart icon and like feature (use local storage to save the user's likes => red heart + display on favorites page?)
+// 7) add navbar and more pages (one to save favorites would be nice)
+// 8) add filters for character traits (+ sort options?)
+// 9) add puppy logo and maybe background image or color
+// 10) add a fun easter egg (display random dog fact when clicking certain element or sth like that)
