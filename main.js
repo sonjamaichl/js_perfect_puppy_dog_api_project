@@ -324,3 +324,5 @@ Bootstrap Card:
 // 8) add filters for character traits (+ sort options?)
 // 9) add puppy logo and maybe background image or color
 // 10) add a fun easter egg (display random dog fact when clicking certain element or sth like that)
+
+//TEST 
