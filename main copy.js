@@ -117,7 +117,7 @@ for (dog of dogs) {
      let cardBody = document.createElement('div');
     cardBody.classList.add('card-body', 'd-flex', 'flex-column', 'justify-content-between');
     card.appendChild(cardBody);
-    
+    //cardBody.innerHTML = "doggy love";
 //create div for h5 and card text (needed to adjust text & button with flex later)
     let cardText = document.createElement('div');
     cardText.style.height = '10rem';            //this makes all cardTexts the same height (since img and buttons are same height as well, all cards are now equal-sized, except when show more was clicked)
@@ -128,8 +128,7 @@ for (dog of dogs) {
     cardTitle.classList.add('card-title');
     cardTitle.innerText = dog.name;
     cardText.appendChild(cardTitle);
-
-    //put p with some text inside cardBody (since there is no description text in api data, let's put sth together using the data they give us...)
+//put p with some text inside cardBody (since there is no description text in api data, let's put sth together using the data they give us...)
     let cardDescription = document.createElement('p');
     
     //calculate average weight of dog and use this value to decide which size the dog is
@@ -153,17 +152,17 @@ for (dog of dogs) {
     //creating a variable to check if wiki page exists for this dog
     let wikiExists = true;
 
-    //fetch data from RAPID DOGS API to get wikipedia url for the dog
-    let wikiLink = 'https://de.wikipedia.org/wiki/Golden_Retriever'; //just for now, function for dynamic links is coming soon...
     
-    
-
     //put description text together and append to cardText
     let textSnippet = (dog.min_life_expectancy === dog.max_life_expectancy)? `is a ${size} dog with a life expectancy of about ${dog.min_life_expectancy} years.` : `is a ${size} dog with a life expectancy of ${dog.min_life_expectancy} - ${dog.max_life_expectancy} years.`;
-    let descriptionText = (wikiExists)? `<span>The <a href=${wikiLink} class="link-primary link-offset-2 link-underline-opacity-25 link-underline-opacity-100-hover" target="_blank">${dog.name}</a> ${textSnippet}</span>` :  `The ${dog.name} ${textSnippet}`;
+    descriptionText = (wikiExists)? `<span>The <a href="www.en.wikipedia.org" class="link-primary link-offset-2 link-underline-opacity-25 link-underline-opacity-100-hover" target="_blank">${dog.name}</a> ${textSnippet}</span>` :  `The ${dog.name} ${textSnippet}`;
     cardDescription.innerHTML = descriptionText;
     cardText.appendChild(cardDescription);
-   
+
+
+    cardDescription.innerText = (dog.min_life_expectancy === dog.max_life_expectancy)? `The ${dog.name} is a ${size} dog with a life expectancy of about ${dog.min_life_expectancy} years.` : `The ${dog.name} is a ${size} dog with a life expectancy of ${dog.min_life_expectancy} - ${dog.max_life_expectancy} years.`;
+    cardDescription.innerText =
+    cardText.appendChild(cardDescription);
 //create div container for button, make it flex + justify-content: center
     let buttonContainer = document.createElement('div');
     buttonContainer.style.display = "flex";
@@ -312,9 +311,8 @@ Bootstrap Card:
   </div>
 </div>
 */
-
 //to do:
-// 1) add a tooltip to let user know they will go to wikipedia if they click on the link in the description text
+// 1) add spinner while waiting for results!!!
 // 2) add pagination (for more than 20 results)?
 // 2) add filters for character traits (+ sort functionality?)
 // 3) clean up code!!! would be nice to have some sort of structure here...

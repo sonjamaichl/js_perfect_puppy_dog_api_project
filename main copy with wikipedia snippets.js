@@ -2,20 +2,24 @@ let basicURL = "https://api.api-ninjas.com/v1/dogs?";
 let offset = 0;
 let dogs = [];
 let showAll = false;
+
 //function to get the input from search bar
 function getSearchInput() {
     let searchInput = showAll? "1" : document.getElementById('searchInput').value;
     return searchInput;
 }
+
 //function to create search URL according to user input
 function getURL(func){
     let searchParameter = showAll? "min_height=" : "name=";
     return basicURL + searchParameter + func().toLowerCase() + "&offset=" + offset;
 }
+
 //adding event listeners to SEARCH & SHOW ALL button that triggers showResults() with different results depending on value of showAll(true/false)
 let searchButton = document.getElementById('searchButton');
 let showAllButton = document.getElementById('showAll');
 let showResultsButtons = document.querySelectorAll(".showResults");
+
 for (btn of showResultsButtons){
 btn.addEventListener('click', function(event){
     if (event.target === showAllButton){
@@ -26,6 +30,8 @@ btn.addEventListener('click', function(event){
     showResults();
 })
 }
+
+
 //adding functionality to ENTER key (same as clicking searchButton)
 document.getElementById('searchInput').addEventListener('keydown', function(event){
     if (event.key === "Enter") {
@@ -33,7 +39,10 @@ document.getElementById('searchInput').addEventListener('keydown', function(even
         searchButton.click();  
     }
 });
+
+
 //function to show the search results
+
 function showResults() {
     document.getElementById('spinner').style.display = 'inline-block';
     document.getElementById('resultsList').innerText = '';
@@ -41,6 +50,8 @@ function showResults() {
     dogs = [];
     getData(getURL(getSearchInput));
 }
+
+
 function getData(url) {
     fetch(url, {
         method: "GET",
@@ -62,14 +73,18 @@ function getData(url) {
                 getData(getURL(getSearchInput));           //making getData() recursive so we can get more than 20 results for each search (with multiple requests)
             } else {
                 offset = 0;
-            createCards(dogs);
-            document.getElementById('spinner').style.display = 'none';
+                showSearchMessage(dogs);
+                createCards(dogs);
+                document.getElementById('spinner').style.display = 'none';
         }
         })
         .catch(err => console.log("oopsies... couldn't fetch data from api"))
 }
+
 //function to create and display one card for each dog in list of results (dogs)
-function createCards(dogs){
+
+function showSearchMessage(dogs){
+
       //displaying message to user to let them know if and how many results were found ===> should showMessage() be a separated function???
       let searchMessage = document.getElementById('searchMessage');
       searchMessage.style.display = 'block';    //change to inline-block to make green box around message smaller
@@ -86,7 +101,9 @@ function createCards(dogs){
         searchMessage.setAttribute('class', 'alert alert-success');
           searchMessage.setAttribute('role', 'alert');  
       }
+}
       
+function createCards(dogs){
 //start loop
 for (dog of dogs) {
 //create one div with classes 'col d-flex align-items-stretch' and another one inside it with class card for every dog + append to resultsList
@@ -97,28 +114,31 @@ for (dog of dogs) {
     let card = document.createElement('div');
     card.classList.add('card');
     colDiv.appendChild(card);
+
 //put img of dog inside card and add card-img-top class + alt
     let newImg = document.createElement('img');
     newImg.src = dog.image_link;
-     newImg.classList.add('card-img-top');
-     newImg.alt = dog.name;
-     card.appendChild(newImg);
+    newImg.classList.add('card-img-top');
+    newImg.alt = dog.name;
+    card.appendChild(newImg);
 
-     //adding event listener to newImg to create a larger modal when clicked
-     newImg.addEventListener('click', function(event){
-         let dogImg = event.target;
-         console.log(dogImg.src);
-         showModal(dogImg);
-     });
+    //adding event listener to newImg to create a larger modal when clicked
+    newImg.addEventListener('click', function(event){
+        let dogImg = event.target;
+        console.log(dogImg.src);
+        showModal(dogImg);
+    });
 
-     //a function to display a modal when picture is clicked
-
- //put another div with class card-body inside card
-     let cardBody = document.createElement('div');
+    //a function to display a modal when picture is clicked
+    
+//put another div with class card-body inside card
+    let cardBody = document.createElement('div');
     cardBody.classList.add('card-body', 'd-flex', 'flex-column', 'justify-content-between');
     card.appendChild(cardBody);
-    
+    //cardBody.innerHTML = "doggy love";
+
 //create div for h5 and card text (needed to adjust text & button with flex later)
+
     let cardText = document.createElement('div');
     cardText.style.height = '10rem';            //this makes all cardTexts the same height (since img and buttons are same height as well, all cards are now equal-sized, except when show more was clicked)
     cardBody.appendChild(cardText);
@@ -129,8 +149,8 @@ for (dog of dogs) {
     cardTitle.innerText = dog.name;
     cardText.appendChild(cardTitle);
 
-    //put p with some text inside cardBody (since there is no description text in api data, let's put sth together using the data they give us...)
-    let cardDescription = document.createElement('p');
+//put p with some text inside cardBody (since there is no description text in api data, let's put sth together using the data they give us...)
+    //let cardDescription = document.createElement('p');
     
     //calculate average weight of dog and use this value to decide which size the dog is
     let size = '';
@@ -150,26 +170,55 @@ for (dog of dogs) {
         size = 'giant';
     }
 
-    //creating a variable to check if wiki page exists for this dog
-    let wikiExists = true;
-
-    //fetch data from RAPID DOGS API to get wikipedia url for the dog
-    let wikiLink = 'https://de.wikipedia.org/wiki/Golden_Retriever'; //just for now, function for dynamic links is coming soon...
+    //create an element for the description text and append it to cardText
+    //let cardDescription = document.createElement('p');
+    //cardText.appendChild(cardDescription);
     
-    
+    //create a short description and link to wikipedia for each dog (using wikipedia's api --> use alternative instead if there is no wiki entry found)
 
-    //put description text together and append to cardText
-    let textSnippet = (dog.min_life_expectancy === dog.max_life_expectancy)? `is a ${size} dog with a life expectancy of about ${dog.min_life_expectancy} years.` : `is a ${size} dog with a life expectancy of ${dog.min_life_expectancy} - ${dog.max_life_expectancy} years.`;
-    let descriptionText = (wikiExists)? `<span>The <a href=${wikiLink} class="link-primary link-offset-2 link-underline-opacity-25 link-underline-opacity-100-hover" target="_blank">${dog.name}</a> ${textSnippet}</span>` :  `The ${dog.name} ${textSnippet}`;
-    cardDescription.innerHTML = descriptionText;
-    cardText.appendChild(cardDescription);
-   
+async function createDescriptionText(dog) {
+    const endpoint = `https://en.wikipedia.org/w/api.php?action=query&list=search&prop=extracts&inprop=url&utf8=&format=json&origin=*&srlimit=1&srsearch=${dog.name}`;
+    console.log(endpoint);
+    const response = await fetch(endpoint);
+    if (!response.ok) {
+        createAltText(dog);
+    } else {
+        const json = await response.json();
+        console.log(json);
+        let wikiDescription = document.createElement('p');
+        cardText.appendChild(wikiDescription);
+        wikiDescription.innerHTML = json.query.search[0].snippet + "...";
+        //console.log (descriptionText);
+       // wikiDescription.href = "en.wikipedia.org"; //JUST FOR NOW ==> CREATE ACTUAL LINK FOR EACH DOG LATER!!!
+       // wikiDescription.target = "_blank";
+        //add a tooltip that tells the user that they will open wikipedia when clicking on this link
+        //wikiDescription.innerHTML = `${json.query.search[0].snippet}`;
+        
+        console.log (wikiDescription.innerHTML);
+    }
+  }
+
+  createDescriptionText(dog);
+
+  //a function to create alternative text if no wiki entry is found:
+
+    function createAltText(dog){
+        let altDescription = document.createElement('p');    
+        altDescription.innerText = (dog.min_life_expectancy === dog.max_life_expectancy)? `The ${dog.name} is a ${size} dog with a life expectancy of about ${dog.min_life_expectancy} years.` : `The ${dog.name} is a ${size} dog with a life expectancy of ${dog.min_life_expectancy} - ${dog.max_life_expectancy} years.`;
+        cardText.appendChild(altDescription);
+    }
+
+
+       
+
 //create div container for button, make it flex + justify-content: center
     let buttonContainer = document.createElement('div');
     buttonContainer.style.display = "flex";
     buttonContainer.style.flexDirection = "row";
     buttonContainer.style.justifyContent = "center";
     cardBody.appendChild(buttonContainer);
+
+
 //INSERT SHOW MORE BUTTON + append to button container
     let showMoreButton = document.createElement('button');             
     showMoreButton.innerText = "Show More";
@@ -177,16 +226,20 @@ for (dog of dogs) {
     showMoreButton.classList.add('btn', 'btn-primary');
     showMoreButton.addEventListener('click', showMore);
     buttonContainer.appendChild(showMoreButton);
+
 //create second part of cardBody that can be accessed by clicking show more button
     let cardBodyOptional = document.createElement('div');
     card.appendChild(cardBodyOptional);
     cardBodyOptional.style.display = "none";
+
 //create ul to list characteristics and append to card
 let listGroup = document.createElement('ul');
 listGroup.classList.add('list-group', 'list-group-flush')
 cardBodyOptional.appendChild(listGroup);
+
 //create li elements with class 'list-group-item' and append to listGroup (ul)
     //let's DRY & write another for loop for that ;-)
+
     function nicerText(string) {
         let newString = "";
         for (let i = 0; i < string.length; i++) {
@@ -208,14 +261,17 @@ cardBodyOptional.appendChild(listGroup);
     //create one li element for every key-value pair
         let listGroupItem = document.createElement('li');
         listGroup.appendChild(listGroupItem);
+
     //create a div tag inside the li and give it class "flex-container" + append to li
         let flexContainer = document.createElement('div');
         flexContainer.classList.add('flex-container');
         listGroupItem.appendChild(flexContainer);
+
     //create a p-tag inside the flex-container div and append
         let characterTrait = document.createElement('p');
         characterTrait.innerText = `${nicerText(key)}: `;
         flexContainer.appendChild(characterTrait);
+
     //create an img-tag inside the flex-container div and append
         let pawRating = document.createElement('img');
         function getPawRatingSrc(value) {
@@ -228,64 +284,68 @@ cardBodyOptional.appendChild(listGroup);
     }
 }
 
-     //create an eventHandlerFunction:       ==> could exist outside of the loop if event.target is used instead of showMoreButton (rewrite event listener to do that)
 
-     function showMore() {
+
+    //create an eventHandlerFunction:       ==> could exist outside of the loop if event.target is used instead of showMoreButton (rewrite event listener to do that)
+
+    function showMore() {
 
     if (showMoreButton.innerText === "Show More") {
    
     //change display property of cardBodyOptional to inline-block?
     cardBodyOptional.style.display = "inline-block";
+
     //change button text to "SHOW LESS" and change its color when clicked:
     showMoreButton.innerText = "Show Less";
     showMoreButton.setAttribute('class', 'btn btn-secondary');
+
     } else {
         showMoreButton.innerText = "Show More";
         showMoreButton.setAttribute('class', 'btn btn-primary');
         cardBodyOptional.style.display = "none";
     }
     }
- }
- }
+}
+}
 
- //a function to display a modal when clicking on the dog images
- function showModal(img){
-     //creating a black overlay to hide other content behind and put modal on top
-     let overlay = document.createElement('div');
-     overlay.classList.add('overlay', 'modal-content');
-     document.body.appendChild(overlay);
+//a function to display a modal when clicking on the dog images
+function showModal(img){
+    //creating a black overlay to hide other content behind and put modal on top
+    let overlay = document.createElement('div');
+    overlay.classList.add('overlay', 'modal-content');
+    document.body.appendChild(overlay);
 
-     //adding a div (flex container) and a close button icon (x) inside on top right corner to go back to results (card view)
-      let closeButtonContainer = document.createElement('div');
-      closeButtonContainer.classList.add('close-btn-container'); //class is not working as intended?!
-      overlay.appendChild(closeButtonContainer);
-      let closeButton = document.createElement('img');
-      closeButton.src = 'resources/img/icons8-close.svg';
-      closeButton.alt = "Close";
-      closeButton.ariaLabel = 'Close';
-      closeButton.classList.add('close-btn');
-      closeButtonContainer.appendChild(closeButton);
+    //adding a div (flex container) and a close button icon (x) inside on top right corner to go back to results (card view)
+     let closeButtonContainer = document.createElement('div');
+     closeButtonContainer.classList.add('close-btn-container'); //class is not working as intended?!
+     overlay.appendChild(closeButtonContainer);
+     let closeButton = document.createElement('img');
+     closeButton.src = 'resources/img/icons8-close.svg';
+     closeButton.alt = "Close";
+     closeButton.ariaLabel = 'Close';
+     closeButton.classList.add('close-btn');
+     closeButtonContainer.appendChild(closeButton);
 
-      //adding eventlistener + eventhandler function to closeIcon
-      closeButton.addEventListener('click', function(){
-         overlay.style.display = 'none';
-      })
+     //adding eventlistener + eventhandler function to closeIcon
+     closeButton.addEventListener('click', function(){
+        overlay.style.display = 'none';
+     })
 
-     //putting new img inside it:
-     let modalImg = document.createElement('img');
-     modalImg.src = img.src;
-     modalImg.alt = img.alt;
-     modalImg.style.maxWidth = '100%';
-     overlay.appendChild(modalImg);
+    //putting new img inside it:
+    let modalImg = document.createElement('img');
+    modalImg.src = img.src;
+    modalImg.alt = img.alt;
+    modalImg.style.maxWidth = '100%';
+    overlay.appendChild(modalImg);
 
-     //adding text that displays the name of the dog (in case user forgets what they clicked on)
-     let modalText = document.createElement('p');
-     modalText.innerText = img.alt;
-     modalText.style.margin = '1rem';
-     overlay.appendChild(modalText);
+    //adding text that displays the name of the dog (in case user forgets what they clicked on)
+    let modalText = document.createElement('p');
+    modalText.innerText = img.alt;
+    modalText.style.margin = '1rem';
+    overlay.appendChild(modalText);
 
 
- }
+}
 
 
 
@@ -314,7 +374,8 @@ Bootstrap Card:
 */
 
 //to do:
-// 1) add a tooltip to let user know they will go to wikipedia if they click on the link in the description text
+
+// 1) add spinner while waiting for results!!!
 // 2) add pagination (for more than 20 results)?
 // 2) add filters for character traits (+ sort functionality?)
 // 3) clean up code!!! would be nice to have some sort of structure here...
