@@ -1,7 +1,9 @@
+//global variables
 let basicURL = "https://api.api-ninjas.com/v1/dogs?";
 let offset = 0;
 let dogs = [];
 let showAll = false;
+
 //function to get the input from search bar
 function getSearchInput() {
     let searchInput = showAll? "1" : document.getElementById('searchInput').value;
@@ -41,6 +43,8 @@ function showResults() {
     dogs = [];
     getData(getURL(getSearchInput));
 }
+
+//function to get data from API and create cards for the search results
 function getData(url) {
     fetch(url, {
         method: "GET",
@@ -49,25 +53,49 @@ function getData(url) {
         }
      })
         .then(response => response.json())
-        .then(result => {
+        .then(async (result) => {
             let newDogs = result;
             for (newDog of newDogs) {
                 dogs.push(newDog);
             }
-            console.log('newDogs: '+newDogs, 'newDogs-length: '+newDogs.length)
-            console.log('dogs: '+dogs, 'dogs.length: '+dogs.length)
+            //console.log('newDogs: '+newDogs, 'newDogs-length: '+newDogs.length)     //TEST
+            //console.log('dogs: '+dogs, 'dogs.length: '+dogs.length)     //TEST
             if (newDogs.length === 20) {
                 //console.log('more than 20 results found, fetching again')
                 offset +=20;
                 getData(getURL(getSearchInput));           //making getData() recursive so we can get more than 20 results for each search (with multiple requests)
             } else {
                 offset = 0;
-            createCards(dogs);
-            document.getElementById('spinner').style.display = 'none';
-        }
-        })
+            }
+            console.log(dogs);  //TEST
+             //getting wikipedia link for each dog from rapid api (before creating cards!)
+             for (dog of dogs) {
+                //console.log(dog.name);  //TEST
+                let wikiQuery =  `https://en.wikipedia.org/w/api.php?action=query&prop=info&format=json&titles=${formatNameForFetch(dog.name)}`;
+                let endpoint = 'https://corsproxy.io/?' + encodeURIComponent(wikiQuery);            //corsproxy.io is a free proxy server, it's necessary to prevent cors errors when sending a request to wikipedia api from a frontend application like in this case
+                //console.log(endpoint);   //TEST
+
+                try {
+                const response = await fetch(endpoint);
+                console.log(response);
+                const result = await response.json();
+                console.log(result);    //TEST
+                dog.wikiLink = ('-1' in result.query.pages)? '' : `https://en.wikipedia.org/wiki/${formatNameForFetch(dog.name)}`;  //adding wikiLink property to each dog object to use later in createCards()-loop
+                console.log(dog.name + ": " + dog.wikiLink); //TEST  
+                }
+                catch (error){
+                    dog.wikiLink = '';
+                    console.log('no wikiLink found for ' + dog.name);
+                }
+            }
+                //create a card with image and info for each dog
+                createCards(dogs);
+                //make spinner invisible
+                document.getElementById('spinner').style.display = 'none';
+                })               
         .catch(err => console.log("oopsies... couldn't fetch data from api"))
 }
+
 //function to create and display one card for each dog in list of results (dogs)
 function createCards(dogs){
       //displaying message to user to let them know if and how many results were found ===> should showMessage() be a separated function???
@@ -149,18 +177,10 @@ for (dog of dogs) {
     } else if (averageWeight() >= 100) {
         size = 'giant';
     }
-
-    //creating a variable to check if wiki page exists for this dog
-    let wikiExists = true;
-
-    //fetch data from RAPID DOGS API to get wikipedia url for the dog
-    let wikiLink = 'https://de.wikipedia.org/wiki/Golden_Retriever'; //just for now, function for dynamic links is coming soon...
     
-    
-
     //put description text together and append to cardText
     let textSnippet = (dog.min_life_expectancy === dog.max_life_expectancy)? `is a ${size} dog with a life expectancy of about ${dog.min_life_expectancy} years.` : `is a ${size} dog with a life expectancy of ${dog.min_life_expectancy} - ${dog.max_life_expectancy} years.`;
-    let descriptionText = (wikiExists)? `<span>The <a href=${wikiLink} class="link-primary link-offset-2 link-underline-opacity-25 link-underline-opacity-100-hover" target="_blank">${dog.name}</a> ${textSnippet}</span>` :  `The ${dog.name} ${textSnippet}`;
+    let descriptionText = (dog.wikiLink === '')? `The ${dog.name} ${textSnippet}` : `<span>The <a class="link-primary link-offset-2 link-underline-opacity-25 link-underline-opacity-100-hover" target="_blank" href="${dog.wikiLink}">${dog.name}</a> ${textSnippet}</span>`;
     cardDescription.innerHTML = descriptionText;
     cardText.appendChild(cardDescription);
    
@@ -202,7 +222,7 @@ cardBodyOptional.appendChild(listGroup);
     }
  
     for (const [key, value] of Object.entries(dog)) {
-        if(key ===  "image_link" || key === "min_life_expectancy" || key === "max_life_expectancy" || key === "max_height_male" || key === "max_height_female" || key === "max_weight_female" || key === "max_weight_male" || key === "min_height_male" || key === "min_height_male" || key === "min_height_female" || key === "min_weight_male" || key === "min_weight_female" || key === "name"){
+        if(key ===  "coat_length" || key ===  "wikiLink" || key ===  "image_link" || key === "min_life_expectancy" || key === "max_life_expectancy" || key === "max_height_male" || key === "max_height_female" || key === "max_weight_female" || key === "max_weight_male" || key === "min_height_male" || key === "min_height_male" || key === "min_height_female" || key === "min_weight_male" || key === "min_weight_female" || key === "name"){
             continue;
         } else {
     //create one li element for every key-value pair
@@ -245,8 +265,8 @@ cardBodyOptional.appendChild(listGroup);
         cardBodyOptional.style.display = "none";
     }
     }
- }
- }
+ }  //END Of FOR LOOP
+ }  //END OF CREATE CARDS FUNCTION
 
  //a function to display a modal when clicking on the dog images
  function showModal(img){
@@ -283,9 +303,23 @@ cardBodyOptional.appendChild(listGroup);
      modalText.innerText = img.alt;
      modalText.style.margin = '1rem';
      overlay.appendChild(modalText);
+    }
 
 
- }
+ //a function to format dog.name for url request:    ==> could this be easier/shorter with .map()??? TRY!!!
+function formatNameForFetch(name) {
+    let newName = '';
+    for (char of name) {
+      if (char === " ") {
+        newName +='_';
+      }
+      else {
+        newName += char;
+      }
+    }
+    //console.log(newName)  //TEST
+    return newName.toLowerCase();
+  }
 
 
 
