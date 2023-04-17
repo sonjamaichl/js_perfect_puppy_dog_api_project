@@ -1,4 +1,4 @@
-//global variables
+//GLOBAL VARIABLES  ==> do they all need to be global? check and if not, put them somewhere else
 let basicURL = "https://api.api-ninjas.com/v1/dogs?";
 let offset = 0;
 let dogs = [];
@@ -6,7 +6,7 @@ let showAll = false;
 
 //function to get the input from search bar
 function getSearchInput() {
-    let searchInput = showAll? "1" : document.getElementById('searchInput').value;
+    let searchInput = showAll? "1" : document.getElementById('searchInput').value;  //sets min_height to 1 (matches all dogs) if showAll is true
     return searchInput;
 }
 //function to create search URL according to user input
@@ -53,7 +53,7 @@ function getData(url) {
         }
      })
         .then(response => response.json())
-        .then(async (result) => {
+        .then(async result => {
             let newDogs = result;
             for (newDog of newDogs) {
                 dogs.push(newDog);
@@ -66,18 +66,18 @@ function getData(url) {
                 getData(getURL(getSearchInput));           //making getData() recursive so we can get more than 20 results for each search (with multiple requests)
             } else {
                 offset = 0;
-            }
-            console.log(dogs);  //TEST
+                console.log(dogs);      //TEST
+
              //getting wikipedia link for each dog from rapid api (before creating cards!)
              for (dog of dogs) {
-                //console.log(dog.name);  //TEST
+                console.log(dog.name);  //TEST
                 let wikiQuery =  `https://en.wikipedia.org/w/api.php?action=query&prop=info&format=json&titles=${formatNameForFetch(dog.name)}`;
                 let endpoint = 'https://corsproxy.io/?' + encodeURIComponent(wikiQuery);            //corsproxy.io is a free proxy server, it's necessary to prevent cors errors when sending a request to wikipedia api from a frontend application like in this case
                 //console.log(endpoint);   //TEST
 
                 try {
                 const response = await fetch(endpoint);
-                console.log(response);
+                //console.log(response);
                 const result = await response.json();
                 console.log(result);    //TEST
                 dog.wikiLink = ('-1' in result.query.pages)? '' : `https://en.wikipedia.org/wiki/${formatNameForFetch(dog.name)}`;  //adding wikiLink property to each dog object to use later in createCards()-loop
@@ -88,13 +88,36 @@ function getData(url) {
                     console.log('no wikiLink found for ' + dog.name);
                 }
             }
+        }
                 //create a card with image and info for each dog
-                createCards(dogs);
+                createCards(dogs);      //THIS FUNCITON NEEDS TO WAIT UNTIL WIKILINKS ARE FETCHED => HOW? ==> so far only works for less than 20 results, for more the links are fetched but property dog.wikiLink is still undefined
                 //make spinner invisible
                 document.getElementById('spinner').style.display = 'none';
-                })               
+            })
+
         .catch(err => console.log("oopsies... couldn't fetch data from api"))
 }
+
+//a function to create new elements in the DOM
+function createElement(htmlTag, parentEl, classesOfEl, innerTextOfEl, source, altText){
+    let newEl = document.createElement(htmlTag);
+    if (classesOfEl !== 'none'){
+        for (classOfEl of classesOfEl){
+        newEl.classList.add(classOfEl);
+    }
+    }
+    if (innerTextOfEl !== 'none'){
+        newEl.innerText = innerTextOfEl;
+    }
+    if (htmlTag === 'img') {
+        newEl.src = source;
+        newEl.alt = altText;
+    }
+    parentEl.appendChild(newEl);
+    return newEl;
+  }
+  //const newHeading = createElement('newHeading', 'h1', document.body, 'basic', 'Hello');  // this will create a new h1 Tag with a text of 'Hello, class of basic and append it to document.body and store it in the variable newHeading
+
 
 //function to create and display one card for each dog in list of results (dogs)
 function createCards(dogs){
@@ -115,49 +138,33 @@ function createCards(dogs){
           searchMessage.setAttribute('role', 'alert');  
       }
       
-//start loop
+//START LOOP
 for (dog of dogs) {
 //create one div with classes 'col d-flex align-items-stretch' and another one inside it with class card for every dog + append to resultsList
-    let resultsList = document.getElementById('resultsList');
-    let colDiv = document.createElement('div');
-    colDiv.classList.add('col');    //adding classes 'd-flex' (and 'align-items-stretch'?) makes all cards the same height, but then they all open, when you only want to open one with "show more"
-    resultsList.appendChild(colDiv);
-    let card = document.createElement('div');
-    card.classList.add('card');
-    colDiv.appendChild(card);
+    const resultsList = document.getElementById('resultsList');
+    const colDiv = createElement('div', resultsList, ['col'], 'none'); //adding classes 'd-flex' (and 'align-items-stretch'?) makes all cards the same height, but then they all open, when you only want to open one with "show more"
+    const card = createElement('div', colDiv, ['card'], 'none');
+    
 //put img of dog inside card and add card-img-top class + alt
-    let newImg = document.createElement('img');
-    newImg.src = dog.image_link;
-     newImg.classList.add('card-img-top');
-     newImg.alt = dog.name;
-     card.appendChild(newImg);
+    const newImg = createElement('img', card, ['card-img-top'], 'none', dog.image_link, dog.name);
 
-     //adding event listener to newImg to create a larger modal when clicked
-     newImg.addEventListener('click', function(event){
-         let dogImg = event.target;
-         console.log(dogImg.src);
-         showModal(dogImg);
+    //adding event listener to newImg to show a larger modal when clicked
+    newImg.addEventListener('click', function(event){
+        const dogImg = event.target;
+        showModal(dogImg);
      });
 
-     //a function to display a modal when picture is clicked
-
- //put another div with class card-body inside card
-     let cardBody = document.createElement('div');
-    cardBody.classList.add('card-body', 'd-flex', 'flex-column', 'justify-content-between');
-    card.appendChild(cardBody);
+//put another div with class card-body inside card
+    const cardBody = createElement('div', card, ['card-body', 'd-flex', 'flex-column', 'justify-content-between'], 'none');
     
 //create div for h5 and card text (needed to adjust text & button with flex later)
-    let cardText = document.createElement('div');
+    const cardText = createElement('div', cardBody, 'none', 'none');
     cardText.style.height = '10rem';            //this makes all cardTexts the same height (since img and buttons are same height as well, all cards are now equal-sized, except when show more was clicked)
-    cardBody.appendChild(cardText);
     
 //put h5 with dog breed's name in cardBody
-    let cardTitle = document.createElement('h5');
-    cardTitle.classList.add('card-title');
-    cardTitle.innerText = dog.name;
-    cardText.appendChild(cardTitle);
+    const cardTitle = createElement('h5', cardText, ['card-title'], dog.name);
 
-    //put p with some text inside cardBody (since there is no description text in api data, let's put sth together using the data they give us...)
+//put p with some text inside cardBody (since there is no description text in api data, let's put sth together using the data they give us...)
     let cardDescription = document.createElement('p');
     
     //calculate average weight of dog and use this value to decide which size the dog is
@@ -185,76 +192,50 @@ for (dog of dogs) {
     cardText.appendChild(cardDescription);
    
 //create div container for button, make it flex + justify-content: center
-    let buttonContainer = document.createElement('div');
-    buttonContainer.style.display = "flex";
-    buttonContainer.style.flexDirection = "row";
-    buttonContainer.style.justifyContent = "center";
-    cardBody.appendChild(buttonContainer);
+    const buttonContainer = createElement('div', cardBody, ['button-container'], 'none');
+    
 //INSERT SHOW MORE BUTTON + append to button container
-    let showMoreButton = document.createElement('button');             
-    showMoreButton.innerText = "Show More";
+    const showMoreButton = createElement('button', buttonContainer, ['btn', 'btn-primary'], 'Show More');
     showMoreButton.type = "button";
-    showMoreButton.classList.add('btn', 'btn-primary');
     showMoreButton.addEventListener('click', showMore);
-    buttonContainer.appendChild(showMoreButton);
+
 //create second part of cardBody that can be accessed by clicking show more button
-    let cardBodyOptional = document.createElement('div');
-    card.appendChild(cardBodyOptional);
+    const cardBodyOptional = createElement('div', card, 'none', 'none');    
     cardBodyOptional.style.display = "none";
+
 //create ul to list characteristics and append to card
-let listGroup = document.createElement('ul');
-listGroup.classList.add('list-group', 'list-group-flush')
-cardBodyOptional.appendChild(listGroup);
-//create li elements with class 'list-group-item' and append to listGroup (ul)
-    //let's DRY & write another for loop for that ;-)
-    function nicerText(string) {
-        let newString = "";
-        for (let i = 0; i < string.length; i++) {
-            if (string[i] === "_") {
-                newString += " ";
-        } else if (i === 0) {
-            newString += string[i].toUpperCase();
-        } else {
-            newString += string[i];
-        }   
-    }
-    return newString;
-    }
- 
+    const listGroup = createElement('ul', cardBodyOptional, ['list-group', 'list-group-flush'], 'none');
+
+//create a li element for some properties of dog with class 'list-group-item' and append to listGroup (ul)
+
     for (const [key, value] of Object.entries(dog)) {
         if(key ===  "coat_length" || key ===  "wikiLink" || key ===  "image_link" || key === "min_life_expectancy" || key === "max_life_expectancy" || key === "max_height_male" || key === "max_height_female" || key === "max_weight_female" || key === "max_weight_male" || key === "min_height_male" || key === "min_height_male" || key === "min_height_female" || key === "min_weight_male" || key === "min_weight_female" || key === "name"){
             continue;
         } else {
     //create one li element for every key-value pair
-        let listGroupItem = document.createElement('li');
-        listGroup.appendChild(listGroupItem);
+        const listGroupItem = createElement('li', listGroup, 'none', 'none');
+
     //create a div tag inside the li and give it class "flex-container" + append to li
-        let flexContainer = document.createElement('div');
-        flexContainer.classList.add('flex-container');
-        listGroupItem.appendChild(flexContainer);
+        const flexContainer = createElement('div', listGroupItem, ['flex-container'], 'none');
+
     //create a p-tag inside the flex-container div and append
-        let characterTrait = document.createElement('p');
-        characterTrait.innerText = `${nicerText(key)}: `;
-        flexContainer.appendChild(characterTrait);
+        const characterTrait = createElement('p', flexContainer, 'none', `${nicerText(key)}: `)
+
     //create an img-tag inside the flex-container div and append
-        let pawRating = document.createElement('img');
+        const pawRating = createElement('img', flexContainer, ['paw-rating'], 'none', getPawRatingSrc(value), `${value} out of 5 paws`)
         function getPawRatingSrc(value) {
             return `./resources/img/paws/${value}_paws.svg`
         }
-        pawRating.src = getPawRatingSrc(value);
-        pawRating.alt = `${value} out of 5 paws`;
-        pawRating.classList.add('paw-rating');
-        flexContainer.appendChild(pawRating);
     }
 }
 
-     //create an eventHandlerFunction:       ==> could exist outside of the loop if event.target is used instead of showMoreButton (rewrite event listener to do that)
+    //create an eventHandlerFunction:       ==> could exist outside of the loop if event.target is used instead of showMoreButton (rewrite event listener to do that) ==>> REWRITE TO STRUCTURE CODe BETTER!!!
 
-     function showMore() {
+    function showMore() {
 
     if (showMoreButton.innerText === "Show More") {
    
-    //change display property of cardBodyOptional to inline-block?
+    //change display property of cardBodyOptional to inline-block to make it visible
     cardBodyOptional.style.display = "inline-block";
     //change button text to "SHOW LESS" and change its color when clicked:
     showMoreButton.innerText = "Show Less";
@@ -270,43 +251,30 @@ cardBodyOptional.appendChild(listGroup);
 
  //a function to display a modal when clicking on the dog images
  function showModal(img){
-     //creating a black overlay to hide other content behind and put modal on top
-     let overlay = document.createElement('div');
-     overlay.classList.add('overlay', 'modal-content');
-     document.body.appendChild(overlay);
+     //creating a white overlay to hide other content behind and put modal on top
+     const overlay = createElement('div', document.body, ['overlay', 'modal-content'], 'none');
 
-     //adding a div (flex container) and a close button icon (x) inside on top right corner to go back to results (card view)
-      let closeButtonContainer = document.createElement('div');
-      closeButtonContainer.classList.add('close-btn-container'); //class is not working as intended?!
-      overlay.appendChild(closeButtonContainer);
-      let closeButton = document.createElement('img');
-      closeButton.src = 'resources/img/icons8-close.svg';
-      closeButton.alt = "Close";
-      closeButton.ariaLabel = 'Close';
-      closeButton.classList.add('close-btn');
-      closeButtonContainer.appendChild(closeButton);
-
-      //adding eventlistener + eventhandler function to closeIcon
-      closeButton.addEventListener('click', function(){
-         overlay.style.display = 'none';
+    //adding a div (flex container) and a close button icon (x) inside on top right corner to go back to results (card view)
+    const closeButtonContainer = createElement('div', overlay, ['close-btn-container'], 'none'); 
+    const closeButton = createElement('img', closeButtonContainer, ['close-btn'], 'none', 'resources/img/icons8-close.svg', 'Close')
+    closeButton.ariaLabel = 'Close';
+ 
+    //adding eventlistener + eventhandler function to closeButton
+    closeButton.addEventListener('click', function(){
+         overlay.style.display = 'none';    //makes overlay and everything on top invisible => back to resultsList view
       })
 
-     //putting new img inside it:
-     let modalImg = document.createElement('img');
-     modalImg.src = img.src;
-     modalImg.alt = img.alt;
-     modalImg.style.maxWidth = '100%';
-     overlay.appendChild(modalImg);
+    //putting new img inside it:
+    const modalImg = createElement('img', overlay, 'none', 'none', img.src, img.alt);
+    modalImg.style.maxWidth = '100%';
 
-     //adding text that displays the name of the dog (in case user forgets what they clicked on)
-     let modalText = document.createElement('p');
-     modalText.innerText = img.alt;
-     modalText.style.margin = '1rem';
-     overlay.appendChild(modalText);
+    //adding text that displays the name of the dog (in case user forgets what they clicked on)
+    const modalText = createElement('p', overlay, 'none', img.alt);
+    modalText.style.margin = '1rem';
     }
 
 
- //a function to format dog.name for url request:    ==> could this be easier/shorter with .map()??? TRY!!!
+//a function to format dog.name for url request:    ==> could this be easier/shorter with .map()??? TRY!!!
 function formatNameForFetch(name) {
     let newName = '';
     for (char of name) {
@@ -318,10 +286,23 @@ function formatNameForFetch(name) {
       }
     }
     //console.log(newName)  //TEST
-    return newName.toLowerCase();
+    return newName;
   }
 
-
+//a function to format dog-objects' properties nicely (no underscores, first letter uppercase) to display in paw-rating
+  function nicerText(string) {
+    let newString = "";
+    for (let i = 0; i < string.length; i++) {
+        if (string[i] === "_") {
+            newString += " ";
+    } else if (i === 0) {
+        newString += string[i].toUpperCase();
+    } else {
+        newString += string[i];
+    }   
+}
+return newString;
+}               //could use .map() here for shorter code?
 
 
 
@@ -354,10 +335,7 @@ Bootstrap Card:
 // 4) add additional pictures from different api?!
 // 5) clean up code!!! would be nice to have some sort of structure here...
 // 6) add heart icon and like feature (use local storage to save the user's likes => red heart + display on favorites page?)
-// 7) add navbar and more pages (one to save favorites would be nice)
+// 7) create functionality for favorites page
 // 8) add filters for character traits (+ sort options?)
 // 9) add puppy logo and maybe background image or color
 // 10) add a fun easter egg (display random dog fact when clicking certain element or sth like that)
-
-//TEST 
-//TEST 2
