@@ -71,7 +71,8 @@ function getData(url) {
              //getting wikipedia link for each dog from rapid api (before creating cards!)
              for (dog of dogs) {
                 console.log(dog.name);  //TEST
-                let wikiQuery =  `https://en.wikipedia.org/w/api.php?action=query&prop=info&format=json&titles=${formatNameForFetch(dog.name)}`;
+                const formattedDogName = dog.name.split("").map(char => (char === ' ')? '_' : char).join("");
+                let wikiQuery =  `https://en.wikipedia.org/w/api.php?action=query&prop=info&format=json&titles=${formattedDogName}`;
                 let endpoint = 'https://corsproxy.io/?' + encodeURIComponent(wikiQuery);            //corsproxy.io is a free proxy server, it's necessary to prevent cors errors when sending a request to wikipedia api from a frontend application like in this case
                 //console.log(endpoint);   //TEST
 
@@ -80,7 +81,7 @@ function getData(url) {
                 //console.log(response);
                 const result = await response.json();
                 console.log(result);    //TEST
-                dog.wikiLink = ('-1' in result.query.pages)? '' : `https://en.wikipedia.org/wiki/${formatNameForFetch(dog.name)}`;  //adding wikiLink property to each dog object to use later in createCards()-loop
+                dog.wikiLink = ('-1' in result.query.pages)? '' : `https://en.wikipedia.org/wiki/${formattedDogName}`;  //adding wikiLink property to each dog object to use later in createCards()-loop
                 console.log(dog.name + ": " + dog.wikiLink); //TEST  
                 }
                 catch (error){
@@ -273,21 +274,6 @@ for (dog of dogs) {
     modalText.style.margin = '1rem';
     }
 
-
-//a function to format dog.name for url request:    ==> could this be easier/shorter with .map()??? TRY!!!
-function formatNameForFetch(name) {
-    let newName = '';
-    for (char of name) {
-      if (char === " ") {
-        newName +='_';
-      }
-      else {
-        newName += char;
-      }
-    }
-    //console.log(newName)  //TEST
-    return newName;
-  }
 
 //a function to format dog-objects' properties nicely (no underscores, first letter uppercase) to display in paw-rating
   function nicerText(string) {
