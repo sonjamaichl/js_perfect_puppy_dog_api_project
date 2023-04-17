@@ -15,16 +15,12 @@ function getURL(func){
     return basicURL + searchParameter + func().toLowerCase() + "&offset=" + offset;
 }
 //adding event listeners to SEARCH & SHOW ALL button that triggers showResults() with different results depending on value of showAll(true/false)
-let searchButton = document.getElementById('searchButton');
-let showAllButton = document.getElementById('showAll');
-let showResultsButtons = document.querySelectorAll(".showResults");
+const searchButton = document.getElementById('searchButton');
+const showAllButton = document.getElementById('showAll');
+const showResultsButtons = document.querySelectorAll(".showResults"); //returns an array of the two buttons
 for (btn of showResultsButtons){
 btn.addEventListener('click', function(event){
-    if (event.target === showAllButton){
-        showAll = true;
-    } else {
-        showAll = false;
-    }
+    showAll = (event.target === showAllButton)? true : false;
     showResults();
 })
 }
