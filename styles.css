@@ -51,16 +51,29 @@ li {
     z-index: 100;
 }
 
+.test-overlay {
+    justify-content: flex-start;
+    align-items: center;
+}
+
 .close-btn-container {
     display: flex;
-    width: 729px;
+    width: 800px;
     max-width: 100%;
     justify-content: flex-end;
     align-items: flex-start;
+    padding: 1rem;
+}
+
+.close-icon-container {
+    display: flex;
+    width: 100%;
+    justify-content: flex-end;
+    padding: 1.5rem;
 }
 
 .close-btn {
-    width: 24px;
+    width: 1.5rem;
     margin-bottom: 0.5rem;
 }
 
@@ -72,4 +85,12 @@ li {
     display: flex;
     flex-direction: row;
     justify-content: center;
+}
+
+#testButton, #nextButton {
+    margin: 2rem;
+}
+
+.test-question-container {
+    margin-top: 3rem;
 }

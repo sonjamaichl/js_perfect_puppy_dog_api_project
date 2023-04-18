@@ -48,7 +48,6 @@ async function getData(url) {
         }
      });
      let newDogs = await response.json();
-     
         for (newDog of newDogs) {
         //console.log(dog.name);  //TEST
          //getting wikipedia link for each dog from rapid api (before creating cards!)
