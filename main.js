@@ -6,8 +6,7 @@ let showAll = false;
 
 //function to get the input from search bar
 function getSearchInput() {
-    let searchInput = showAll? "1" : document.getElementById('searchInput').value;  //sets min_height to 1 (matches all dogs) if showAll is true
-    return searchInput;
+    return showAll? "1" : document.getElementById('searchInput').value;  //sets min_height to 1 (matches all dogs) if showAll is true
 }
 //function to create search URL according to user input
 function getURL(func){
@@ -41,60 +40,47 @@ function showResults() {
 }
 
 //function to get data from API and create cards for the search results
-function getData(url) {
-    fetch(url, {
+async function getData(url) {
+    let response = await fetch(url, {
         method: "GET",
         headers: {
           "X-API-Key": "qwIGzCw6xnboQDmPHxp2wQ==7CP90HowwDVCSr2d",
         }
-     })
-        .then(response => response.json())
-        .then(async result => {
-            let newDogs = result;
-            for (newDog of newDogs) {
-                dogs.push(newDog);
-            }
-            //console.log('newDogs: '+newDogs, 'newDogs-length: '+newDogs.length)     //TEST
-            //console.log('dogs: '+dogs, 'dogs.length: '+dogs.length)     //TEST
-            if (newDogs.length === 20) {
+     });
+     let newDogs = await response.json();
+     
+        for (newDog of newDogs) {
+        //console.log(dog.name);  //TEST
+         //getting wikipedia link for each dog from rapid api (before creating cards!)
+            const formattedDogName = newDog.name.split("").map(char => (char === ' ')? '_' : char).join("");
+            let wikiQuery =  `https://en.wikipedia.org/w/api.php?action=query&prop=info&format=json&titles=${formattedDogName}`;
+            let endpoint = 'https://corsproxy.io/?' + encodeURIComponent(wikiQuery);            //corsproxy.io is a free proxy server, it's necessary to prevent cors errors when sending a request to wikipedia api from a frontend application like in this case
+            //console.log(endpoint);   //TEST
+            let response = await fetch(endpoint);
+                    //console.log(response);
+            let result = await response.json();
+                    //console.log(result);    //TEST
+            newDog.wikiLink = ('-1' in result.query.pages)? '' : `https://en.wikipedia.org/wiki/${formattedDogName}`;  //adding wikiLink property to each dog object to use later in createCards()-loop
+            console.log(newDog.name + ": " + newDog.wikiLink); //TEST  
+            dogs.push(newDog);
+        }
+
+        if (newDogs.length === 20) {
                 //console.log('more than 20 results found, fetching again')
                 offset +=20;
                 getData(getURL(getSearchInput));           //making getData() recursive so we can get more than 20 results for each search (with multiple requests)
-            } else {
+        } else {
                 offset = 0;
                 console.log(dogs);      //TEST
-
-             //getting wikipedia link for each dog from rapid api (before creating cards!)
-             for (dog of dogs) {
-                console.log(dog.name);  //TEST
-                const formattedDogName = dog.name.split("").map(char => (char === ' ')? '_' : char).join("");
-                let wikiQuery =  `https://en.wikipedia.org/w/api.php?action=query&prop=info&format=json&titles=${formattedDogName}`;
-                let endpoint = 'https://corsproxy.io/?' + encodeURIComponent(wikiQuery);            //corsproxy.io is a free proxy server, it's necessary to prevent cors errors when sending a request to wikipedia api from a frontend application like in this case
-                //console.log(endpoint);   //TEST
-
-                try {
-                const response = await fetch(endpoint);
-                //console.log(response);
-                const result = await response.json();
-                console.log(result);    //TEST
-                dog.wikiLink = ('-1' in result.query.pages)? '' : `https://en.wikipedia.org/wiki/${formattedDogName}`;  //adding wikiLink property to each dog object to use later in createCards()-loop
-                console.log(dog.name + ": " + dog.wikiLink); //TEST  
-                }
-                catch (error){
-                    dog.wikiLink = '';
-                    console.log('no wikiLink found for ' + dog.name);
-                }
+                //show a message to user to let them know if and how many search results were found
+                //showSearchMessage(dogs); ==> make this a seperate function (now it is inside createCards and put it here!)
+                //create a card with image and info for each dog
+                createCards(dogs); //==> no loop needed here it's inside the function (could also be here, does it make a difference?)
+                //make spinner invisible
+                document.getElementById('spinner').style.display = 'none';   
             }
         }
-                //create a card with image and info for each dog
-                createCards(dogs);      //THIS FUNCITON NEEDS TO WAIT UNTIL WIKILINKS ARE FETCHED => HOW? ==> so far only works for less than 20 results, for more the links are fetched but property dog.wikiLink is still undefined
-                //make spinner invisible
-                document.getElementById('spinner').style.display = 'none';
-            })
-
-        .catch(err => console.log("oopsies... couldn't fetch data from api"))
-}
-
+    
 //a function to create new elements in the DOM
 function createElement(htmlTag, parentEl, classesOfEl, innerTextOfEl, source, altText){
     let newEl = document.createElement(htmlTag);
@@ -311,7 +297,8 @@ Bootstrap Card:
 */
 
 //to do & ideas:
-// 1) add a tooltip to let user know they will go to wikipedia if they click on the link in the description text
+// 1) add a try/catch block to the async functions fetching data from the API!!!
+// 2) add a tooltip to let user know they will go to wikipedia if they click on the link in the description text
 // 2) add pagination (for more than 20 results)?
 // 3) add filters for character traits (+ sort functionality?)
 // 4) add additional pictures from different api?!
