@@ -39,8 +39,11 @@
 
     <main>
     <div class="container">
+      
     <h1>Perfect Puppy</h1>
     <p>Find your furry friend based on the breed's characteristics. Check it out, it's really pawsome!</p>
+    
+    <!--SEARCH BAR & SHOW ALL BREEDS BUTTON HERE-->
     <div class="navbar bg-body-tertiary" id="searchBar">
       <div class="container-fluid">
         <form class="d-flex" role="search">
@@ -50,13 +53,21 @@
         <button type="button" class="btn btn-primary showResults" id="showAll">Show all breeds</button>
       </div>
     </div>
+
+    <!--SPINNER-->
     <div class="d-flex justify-content-center">
       <div class="spinner-border text-primary" role="status" id="spinner">
         <span class="visually-hidden">Loading...</span>
       </div>
     </div>
+
+    <!--SHOW MESSAGE IF & HOW MANY RESULTS WERE FOUND HERE-->
     <div id="searchMessage"></div>
-   
+
+    <!--SHOW DROPDOWN SELECT TO SORT RESULTS HERE-->
+    <div id="sortOptions"></div>
+  
+    <!--SHOW RESULT CARDS HERE-->
     <div id="resultsList" class="row g-3 row-cols-1 row-cols-sm-2 row-cols-md-3 row-cols-lg-4">
       <!-- responsive hybrid grid: smartphone => 1 col, small display => 2, medium => 3 large or more => 4
             g-3 adds gutter space between rows (values 1-5 possible)-->

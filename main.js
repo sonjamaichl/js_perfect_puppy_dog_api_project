@@ -37,6 +37,7 @@ function showResults() {
     document.getElementById('searchMessage').style.display = 'none';
     dogs = [];
     getData(getURL(getSearchInput));
+    //put function to add the SORTING OPTIONS here???
 }
 
 //function to get data from API and create cards for the search results
@@ -103,12 +104,14 @@ function createElement(htmlTag, parentEl, classesOfEl, innerTextOfEl, source, al
 
 //function to create and display one card for each dog in list of results (dogs)
 function createCards(dogs){
-      //displaying message to user to let them know if and how many results were found ===> should showMessage() be a separated function???
-      let searchMessage = document.getElementById('searchMessage');
+      //displaying message to user to let them know if and how many results were found                  ===> should showMessage() be a SEPERATE FUNCTION???
+      const searchMessage = document.getElementById('searchMessage');
       searchMessage.style.display = 'block';    //change to inline-block to make green box around message smaller
+      searchMessage.setAttribute('role', 'alert');
       if (dogs.length === 0) {
           searchMessage.innerText = `Sorry, no results found for "${getSearchInput()}".`
           searchMessage.setAttribute('class', 'alert alert-secondary');  
+         
       } else {
             if(showAll) {
                 searchMessage.innerText = `${dogs.length} breeds found`;
@@ -117,124 +120,123 @@ function createCards(dogs){
           searchMessage.innerText = (dogs.length === 1)? `${dogs.length} result found for "${getSearchInput()}":` : `${dogs.length} results found for "${getSearchInput()}":`;
         }
         searchMessage.setAttribute('class', 'alert alert-success');
-          searchMessage.setAttribute('role', 'alert');  
       }
+
+    //display a select form (dropdown) to choose sorting options for the search results (only if there's more than 1 result!)
+    if (dogs.length > 1){
+        showSortingOptions(dogs);
+    }
       
-//START LOOP
-for (dog of dogs) {
-//create one div with classes 'col d-flex align-items-stretch' and another one inside it with class card for every dog + append to resultsList
-    const resultsList = document.getElementById('resultsList');
-    const colDiv = createElement('div', resultsList, ['col'], 'none'); //adding classes 'd-flex' (and 'align-items-stretch'?) makes all cards the same height, but then they all open, when you only want to open one with "show more"
-    const card = createElement('div', colDiv, ['card'], 'none');
-    
-//put img of dog inside card and add card-img-top class + alt
-    const newImg = createElement('img', card, ['card-img-top'], 'none', dog.image_link, dog.name);
+    //START LOOP
+    for (dog of dogs) {
+    //create one div with classes 'col d-flex align-items-stretch' and another one inside it with class card for every dog + append to resultsList
+        const resultsList = document.getElementById('resultsList');
+        const colDiv = createElement('div', resultsList, ['col'], 'none'); //adding classes 'd-flex' (and 'align-items-stretch'?) makes all cards the same height, but then they all open, when you only want to open one with "show more"
+        const card = createElement('div', colDiv, ['card'], 'none');
+        
+    //put img of dog inside card and add card-img-top class + alt
+        const newImg = createElement('img', card, ['card-img-top'], 'none', dog.image_link, dog.name);
 
-    //adding event listener to newImg to show a larger modal when clicked
-    newImg.addEventListener('click', function(event){
-        const dogImg = event.target;
-        showModal(dogImg);
-     });
+        //adding event listener to newImg to show a larger modal when clicked
+        newImg.addEventListener('click', function(event){
+            const dogImg = event.target;
+            showModal(dogImg);
+        });
 
-//put another div with class card-body inside card
-    const cardBody = createElement('div', card, ['card-body', 'd-flex', 'flex-column', 'justify-content-between'], 'none');
-    
-//create div for h5 and card text (needed to adjust text & button with flex later)
-    const cardText = createElement('div', cardBody, 'none', 'none');
-    cardText.style.height = '10rem';            //this makes all cardTexts the same height (since img and buttons are same height as well, all cards are now equal-sized, except when show more was clicked)
-    
-//put h5 with dog breed's name in cardBody
-    const cardTitle = createElement('h5', cardText, ['card-title'], dog.name);
+    //put another div with class card-body inside card
+        const cardBody = createElement('div', card, ['card-body', 'd-flex', 'flex-column', 'justify-content-between'], 'none');
+        
+    //create div for h5 and card text (needed to adjust text & button with flex later)
+        const cardText = createElement('div', cardBody, 'none', 'none');
+        cardText.style.height = '10rem';            //this makes all cardTexts the same height (since img and buttons are same height as well, all cards are now equal-sized, except when show more was clicked)
+        
+    //put h5 with dog breed's name in cardBody
+        const cardTitle = createElement('h5', cardText, ['card-title'], dog.name);
 
-//put p with some text inside cardBody (since there is no description text in api data, let's put sth together using the data they give us...)
-    let cardDescription = document.createElement('p');
-    
-    //calculate average weight of dog and use this value to decide which size the dog is
-    let size = '';
-    function averageWeight(){
-        return (dog.min_weight_female+dog.max_weight_female+dog.min_weight_male+dog.max_weight_male)/4
-    }
-    //console.log(averageWeight(dogs[i]));
-    if(averageWeight() < 12) {
-        size = 'miniature';
-    } else if(averageWeight() < 25) {
-        size = 'small';
-    } else if (averageWeight() < 60) {
-        size = 'medium';
-    } else if (averageWeight() < 100) {
-        size = 'large';
-    } else if (averageWeight() >= 100) {
-        size = 'giant';
-    }
-    
-    //put description text together and append to cardText
-    let textSnippet = (dog.min_life_expectancy === dog.max_life_expectancy)? `is a ${size} dog with a life expectancy of about ${dog.min_life_expectancy} years.` : `is a ${size} dog with a life expectancy of ${dog.min_life_expectancy} - ${dog.max_life_expectancy} years.`;
-    let descriptionText = (dog.wikiLink === '')? `The ${dog.name} ${textSnippet}` : `<span>The <a class="link-primary link-offset-2 link-underline-opacity-25 link-underline-opacity-100-hover" target="_blank" href="${dog.wikiLink}">${dog.name}</a> ${textSnippet}</span>`;
-    cardDescription.innerHTML = descriptionText;
-    cardText.appendChild(cardDescription);
-   
-//create div container for button, make it flex + justify-content: center
-    const buttonContainer = createElement('div', cardBody, ['button-container'], 'none');
-    
-//INSERT SHOW MORE BUTTON + append to button container
-    const showMoreButton = createElement('button', buttonContainer, ['btn', 'btn-primary'], 'Show More');
-    showMoreButton.type = "button";
-    showMoreButton.addEventListener('click', showMore);
-
-//create second part of cardBody that can be accessed by clicking show more button
-    const cardBodyOptional = createElement('div', card, 'none', 'none');    
-    cardBodyOptional.style.display = "none";
-
-//create ul to list characteristics and append to card
-    const listGroup = createElement('ul', cardBodyOptional, ['list-group', 'list-group-flush'], 'none');
-
-//create a li element for some properties of dog with class 'list-group-item' and append to listGroup (ul)
-
-    for (const [key, value] of Object.entries(dog)) {
-        if(key ===  "coat_length" || key ===  "wikiLink" || key ===  "image_link" || key === "min_life_expectancy" || key === "max_life_expectancy" || key === "max_height_male" || key === "max_height_female" || key === "max_weight_female" || key === "max_weight_male" || key === "min_height_male" || key === "min_height_male" || key === "min_height_female" || key === "min_weight_male" || key === "min_weight_female" || key === "name"){
-            continue;
-        } else {
-    //create one li element for every key-value pair
-        const listGroupItem = createElement('li', listGroup, 'none', 'none');
-
-    //create a div tag inside the li and give it class "flex-container" + append to li
-        const flexContainer = createElement('div', listGroupItem, ['flex-container'], 'none');
-
-    //create a p-tag inside the flex-container div and append
-        const characterTrait = createElement('p', flexContainer, 'none', `${nicerText(key)}: `)
-
-    //create an img-tag inside the flex-container div and append
-        const pawRating = createElement('img', flexContainer, ['paw-rating'], 'none', getPawRatingSrc(value), `${value} out of 5 paws`)
-        function getPawRatingSrc(value) {
-            return `./resources/img/paws/${value}_paws.svg`
+    //put p with some text inside cardBody (since there is no description text in api data, let's put sth together using the data they give us...)
+        let cardDescription = document.createElement('p');
+        
+        //calculate average weight of dog and use this value to decide which size the dog is
+        let size = '';
+        function averageWeight(){
+            return (dog.min_weight_female+dog.max_weight_female+dog.min_weight_male+dog.max_weight_male)/4
         }
-    }
-}
-
-    //create an eventHandlerFunction:       ==> could exist outside of the loop if event.target is used instead of showMoreButton (rewrite event listener to do that) ==>> REWRITE TO STRUCTURE CODe BETTER!!!
-
-    function showMore() {
-
-    if (showMoreButton.innerText === "Show More") {
+        //console.log(averageWeight(dogs[i]));
+        if(averageWeight() < 12) {
+            size = 'miniature';
+        } else if(averageWeight() < 25) {
+            size = 'small';
+        } else if (averageWeight() < 60) {
+            size = 'medium';
+        } else if (averageWeight() < 100) {
+            size = 'large';
+        } else if (averageWeight() >= 100) {
+            size = 'giant';
+        }
+        
+        //put description text together and append to cardText
+        let textSnippet = (dog.min_life_expectancy === dog.max_life_expectancy)? `is a ${size} dog with a life expectancy of about ${dog.min_life_expectancy} years.` : `is a ${size} dog with a life expectancy of ${dog.min_life_expectancy} - ${dog.max_life_expectancy} years.`;
+        let descriptionText = (dog.wikiLink === '')? `The ${dog.name} ${textSnippet}` : `<span>The <a class="link-primary link-offset-2 link-underline-opacity-25 link-underline-opacity-100-hover" target="_blank" href="${dog.wikiLink}">${dog.name}</a> ${textSnippet}</span>`;
+        cardDescription.innerHTML = descriptionText;
+        cardText.appendChild(cardDescription);
    
-    //change display property of cardBodyOptional to inline-block to make it visible
-    cardBodyOptional.style.display = "inline-block";
-    //change button text to "SHOW LESS" and change its color when clicked:
-    showMoreButton.innerText = "Show Less";
-    showMoreButton.setAttribute('class', 'btn btn-secondary');
-    } else {
-        showMoreButton.innerText = "Show More";
-        showMoreButton.setAttribute('class', 'btn btn-primary');
-        cardBodyOptional.style.display = "none";
-    }
-    }
- }  //END Of FOR LOOP
+        //create div container for button, make it flex + justify-content: center
+            const buttonContainer = createElement('div', cardBody, ['button-container'], 'none');
+            
+        //INSERT SHOW MORE BUTTON + append to button container
+            const showMoreButton = createElement('button', buttonContainer, ['btn', 'btn-primary'], 'Show More');
+            showMoreButton.type = "button";
+            showMoreButton.addEventListener('click', showMore);
+
+        //create second part of cardBody that can be accessed by clicking show more button
+            const cardBodyOptional = createElement('div', card, 'none', 'none');    
+            cardBodyOptional.style.display = "none";
+
+        //create ul to list characteristics and append to card
+            const listGroup = createElement('ul', cardBodyOptional, ['list-group', 'list-group-flush'], 'none');
+
+        //create a li element for some properties of dog with class 'list-group-item' and append to listGroup (ul)
+
+            for (const [key, value] of Object.entries(dog)) {
+                if(key ===  "coat_length" || key ===  "wikiLink" || key ===  "image_link" || key === "min_life_expectancy" || key === "max_life_expectancy" || key === "max_height_male" || key === "max_height_female" || key === "max_weight_female" || key === "max_weight_male" || key === "min_height_male" || key === "min_height_male" || key === "min_height_female" || key === "min_weight_male" || key === "min_weight_female" || key === "name"){
+                    continue;
+                } else {
+            //create one li element for every key-value pair
+                const listGroupItem = createElement('li', listGroup, 'none', 'none');
+
+            //create a div tag inside the li and give it class "flex-container" + append to li
+                const flexContainer = createElement('div', listGroupItem, ['flex-container'], 'none');
+
+            //create a p-tag inside the flex-container div and append
+                const characterTrait = createElement('p', flexContainer, 'none', `${nicerText(key)}: `);
+
+            //create an img-tag inside the flex-container div and append
+                const pawRating = createElement('img', flexContainer, ['paw-rating'], 'none', `./resources/img/paws/${value}_paws.svg`, `${value} out of 5 paws`);
+            }
+        }
+
+        //create an eventHandlerFunction:       ==> could exist outside of the loop if event.target is used instead of showMoreButton (rewrite event listener to do that) ==>> REWRITE TO STRUCTURE CODe BETTER!!!
+        function showMore() {
+        if (showMoreButton.innerText === "Show More") {
+        //change display property of cardBodyOptional to inline-block to make it visible
+        cardBodyOptional.style.display = "inline-block";
+        //change button text to "SHOW LESS" and change its color when clicked:
+        showMoreButton.innerText = "Show Less";
+        showMoreButton.setAttribute('class', 'btn btn-secondary');
+        } else {
+            showMoreButton.innerText = "Show More";
+            showMoreButton.setAttribute('class', 'btn btn-primary');
+            cardBodyOptional.style.display = "none";
+        }
+        }
+    }  //END Of FOR LOOP
  }  //END OF CREATE CARDS FUNCTION
+
 
  //a function to display a modal when clicking on the dog images
  function showModal(img){
-     //creating a white overlay to hide other content behind and put modal on top
-     const overlay = createElement('div', document.body, ['overlay', 'modal-content'], 'none');
+    //creating a white overlay to hide other content behind and put modal on top
+    const overlay = createElement('div', document.body, ['overlay', 'modal-content'], 'none');
 
     //adding a div (flex container) and a close button icon (x) inside on top right corner to go back to results (card view)
     const closeButtonContainer = createElement('div', overlay, ['close-btn-container'], 'none'); 
@@ -253,11 +255,11 @@ for (dog of dogs) {
     //adding text that displays the name of the dog (in case user forgets what they clicked on)
     const modalText = createElement('p', overlay, 'none', img.alt);
     modalText.style.margin = '1rem';
-    }
+}
 
 
 //a function to format dog-objects' properties nicely (no underscores, first letter uppercase) to display in paw-rating
-  function nicerText(string) {
+function nicerText(string) {
     let newString = "";
     for (let i = 0; i < string.length; i++) {
         if (string[i] === "_") {
@@ -271,29 +273,46 @@ for (dog of dogs) {
 return newString;
 }               //could use .map() here for shorter code?
 
+function showSortingOptions(dogs){
+    const selectFormContainer = createElement('div', sortOptions, ['container', 'd-flex', 'justify-content-around'], 'none');
+    selectFormContainer.style.marginBottom = '1rem';      //should probably give it a class and do that in CSS, just for now to see how it looks...
+    const labelForSelectForm = createElement('label', selectFormContainer, 'none', 'Sort results:')
+    //labelForSelectForm.style.width ='50%';
+    const selectForm = createElement('select', selectFormContainer, ['form-select', 'form-select-sm'], 'none');
+    //selectForm.style.minWidth = '25%'; //==> CSS!
+    const optionDefault = createElement('option', selectForm, 'none', 'alphabetically A-Z');
+    optionDefault.value = 'Alphabetically A-Z';
+    optionDefault.value.selected = true;
+    //loop through some of the dog object's properties to get sorting options
+    for (const [key] of Object.entries(dogs[0])) {
+        const noSortingOptions = ['name', 'image_link', 'wikiLink', 'min_height_female', 'max_height_female', 'min_height_male', 'min_weight_female', 'max_weight_female', 'min_weight_male', 'min_life_expectancy'];
+        if(noSortingOptions.includes(key)){
+            continue
+        } else {
+        const newOptionIncreasing = createElement('option', selectForm, 'none', `${nicerText(key)}: lowest to highest`);
+        newOptionIncreasing.value = `${nicerText(key)}: lowest to highest`;
+        const newOptionDecreasing = createElement('option', selectForm, 'none', `${nicerText(key)}: highest to lowest`);
+        newOptionIncreasing.value = `${nicerText(key)}: highest to lowest`;
+    }
+    }
+    
 
 
+    //add sorting options as a dropdown => get names of optinos from object properties?
+    //get value to see which options the user selected
+    
 
-
+} //should there be 2 functions? one for adding the sorting options (between search message and results) + another one to actually sort? 
 /*
-Bootstrap Card:
-<div class="card" style="width: 18rem;">
-  <img src="..." class="card-img-top" alt="...">
-  <div class="card-body">
-    <h5 class="card-title">Card title</h5>
-    <p class="card-text">Some quick example text to build on the card title and make up the bulk of the card's content.</p>
-  </div>
-  <ul class="list-group list-group-flush">
-    <li class="list-group-item">An item</li>
-    <li class="list-group-item">A second item</li>
-    <li class="list-group-item">A third item</li>
-  </ul>
-  <div class="card-body">
-    <a href="#" class="card-link">Card link</a>
-    <a href="#" class="card-link">Another link</a>
-  </div>
-</div>
+<select class="form-select form-select-sm" aria-label=".form-select-sm example">
+  <option selected>Open this select menu</option>
+  <option value="1">One</option>
+  <option value="2">Two</option>
+  <option value="3">Three</option>
+</select>
 */
+
+
 
 //to do & ideas:
 // 1) add a try/catch block to the async functions fetching data from the API!!!
