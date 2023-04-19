@@ -73,7 +73,11 @@ async function getData(url) {
                 offset = 0;
                 console.log(dogs);      //TEST
                 //show a message to user to let them know if and how many search results were found
-                //showSearchMessage(dogs); ==> make this a seperate function (now it is inside createCards and put it here!)
+                showSearchMessage(dogs);
+                 //display a select form (dropdown) to choose sorting options for the search results (only if there's more than 1 result!)
+                if (dogs.length > 1){
+                    showSortingOptions(dogs);
+                }
                 //create a card with image and info for each dog
                 createCards(dogs); //==> no loop needed here it's inside the function (could also be here, does it make a difference?)
                 //make spinner invisible
@@ -101,31 +105,28 @@ function createElement(htmlTag, parentEl, classesOfEl, innerTextOfEl, source, al
   }
   //const newHeading = createElement('newHeading', 'h1', document.body, 'basic', 'Hello');  // this will create a new h1 Tag with a text of 'Hello, class of basic and append it to document.body and store it in the variable newHeading
 
+//a function displaying a message to user to let them know if and how many results were found
+function showSearchMessage(dogs){
+    const searchMessage = document.getElementById('searchMessage');
+    searchMessage.style.display = 'block';    //change to inline-block to make green box around message smaller
+    searchMessage.setAttribute('role', 'alert');
+    if (dogs.length === 0) {
+        searchMessage.innerText = `Sorry, no results found for "${getSearchInput()}".`
+        searchMessage.setAttribute('class', 'alert alert-secondary');  
+       
+    } else {
+          if(showAll) {
+              searchMessage.innerText = `${dogs.length} breeds found`;
+          }
+          else {
+        searchMessage.innerText = (dogs.length === 1)? `${dogs.length} result found for "${getSearchInput()}":` : `${dogs.length} results found for "${getSearchInput()}":`;
+      }
+      searchMessage.setAttribute('class', 'alert alert-success');
+    }
+  }
 
 //function to create and display one card for each dog in list of results (dogs)
 function createCards(dogs){
-      //displaying message to user to let them know if and how many results were found                  ===> should showMessage() be a SEPERATE FUNCTION???
-      const searchMessage = document.getElementById('searchMessage');
-      searchMessage.style.display = 'block';    //change to inline-block to make green box around message smaller
-      searchMessage.setAttribute('role', 'alert');
-      if (dogs.length === 0) {
-          searchMessage.innerText = `Sorry, no results found for "${getSearchInput()}".`
-          searchMessage.setAttribute('class', 'alert alert-secondary');  
-         
-      } else {
-            if(showAll) {
-                searchMessage.innerText = `${dogs.length} breeds found`;
-            }
-            else {
-          searchMessage.innerText = (dogs.length === 1)? `${dogs.length} result found for "${getSearchInput()}":` : `${dogs.length} results found for "${getSearchInput()}":`;
-        }
-        searchMessage.setAttribute('class', 'alert alert-success');
-      }
-
-    //display a select form (dropdown) to choose sorting options for the search results (only if there's more than 1 result!)
-    if (dogs.length > 1){
-        showSortingOptions(dogs);
-    }
       
     //START LOOP
     for (dog of dogs) {
@@ -274,6 +275,7 @@ return newString;
 }               //could use .map() here for shorter code?
 
 function showSortingOptions(dogs){
+    document.getElementById('sortOptions').innerText = '';
     const selectFormContainer = createElement('div', sortOptions, ['container', 'd-flex', 'justify-content-around'], 'none');
     selectFormContainer.style.marginBottom = '1rem';      //should probably give it a class and do that in CSS, just for now to see how it looks...
     const labelForSelectForm = createElement('label', selectFormContainer, 'none', 'Sort results:')
@@ -282,39 +284,60 @@ function showSortingOptions(dogs){
     //selectForm.style.minWidth = '25%'; //==> CSS!
     const optionDefault = createElement('option', selectForm, 'none', 'alphabetically A-Z');
     optionDefault.value = 'Alphabetically A-Z';
-    optionDefault.value.selected = true;
+    //optionDefault.value.selected = true;
     //loop through some of the dog object's properties to get sorting options
     for (const [key] of Object.entries(dogs[0])) {
-        const noSortingOptions = ['name', 'image_link', 'wikiLink', 'min_height_female', 'max_height_female', 'min_height_male', 'min_weight_female', 'max_weight_female', 'min_weight_male', 'min_life_expectancy'];
+        const noSortingOptions = ['name', 'image_link', 'coat_length', 'wikiLink', 'min_height_female', 'max_height_female', 'min_height_male', 'min_weight_female', 'max_weight_female', 'min_weight_male', 'min_life_expectancy'];
         if(noSortingOptions.includes(key)){
             continue
         } else {
         const newOptionIncreasing = createElement('option', selectForm, 'none', `${nicerText(key)}: lowest to highest`);
-        newOptionIncreasing.value = `${nicerText(key)}: lowest to highest`;
+        newOptionIncreasing.value = key+' increasing';
         const newOptionDecreasing = createElement('option', selectForm, 'none', `${nicerText(key)}: highest to lowest`);
-        newOptionIncreasing.value = `${nicerText(key)}: highest to lowest`;
+        newOptionDecreasing.value = key+' decreasing';
+    }
+    }
+
+    //add eventlistener + eventhandler function to selectForm
+    selectForm.addEventListener('change', getSelectedValue);
+    
+    function getSelectedValue(){
+        let property = selectForm.value.split(' ')[0]; //split the value in two and store first as property and second as 
+        console.log(property);
+        let order = selectForm.value.split(' ')[1];
+        console.log(order);
+
+    //clear previous results before sorting and displaying in new order
+    document.getElementById('resultsList').innerText = '';
+    document.getElementById('searchMessage').style.display = 'none';
+
+    //showResults(sortResults(dogs, property, order));
+    createCards(sortResults(dogs, property, order));
     }
     }
     
+//a function to sort an array by a specific property's values in increasing or decreasing order
+function sortResults(array, property, order){
+    let sortedArray = [];
+        if (order === 'increasing'){
+            sortedArray = array.sort((a, b) => (a[property] > b[property])? 1 : -1);
+        } else if (order === 'decreasing'){
+            sortedArray = array.sort((a, b) => (a[property] < b[property])? 1 : -1);
+        } else {
+            console.log ("sorry, couldn't sort array");
+        }
+        console.log('This is my new array sorted by ' + property + ' in '+ order + ' order:')
+        console.log(sortedArray);
+        return sortedArray;
+}  
 
-
-    //add sorting options as a dropdown => get names of optinos from object properties?
-    //get value to see which options the user selected
-    
-
-} //should there be 2 functions? one for adding the sorting options (between search message and results) + another one to actually sort? 
-/*
-<select class="form-select form-select-sm" aria-label=".form-select-sm example">
-  <option selected>Open this select menu</option>
-  <option value="1">One</option>
-  <option value="2">Two</option>
-  <option value="3">Three</option>
-</select>
-*/
 
 
 
 //to do & ideas:
+
+// ==> hide sorting options while searching (when spinner is running)
+
 // 1) add a try/catch block to the async functions fetching data from the API!!!
 // 2) add a tooltip to let user know they will go to wikipedia if they click on the link in the description text
 // 2) add pagination (for more than 20 results)?
