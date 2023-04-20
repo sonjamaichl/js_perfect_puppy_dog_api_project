@@ -52,7 +52,9 @@ async function getData(url) {
      let newDogs = await response.json();
         for (newDog of newDogs) {
         //console.log(dog.name);  //TEST
-         //getting wikipedia link for each dog from rapid api (before creating cards!)
+        //adding likedBefore property (to use later) and setting it to false
+            newDog.likedBefore = false;
+        //getting wikipedia link for each dog from rapid api (before creating cards!)
             const formattedDogName = newDog.name.split("").map(char => (char === ' ')? '_' : char).join("");
             let wikiQuery =  `https://en.wikipedia.org/w/api.php?action=query&prop=info&format=json&titles=${formattedDogName}`;
             let endpoint = 'https://corsproxy.io/?' + encodeURIComponent(wikiQuery);            //corsproxy.io is a free proxy server, it's necessary to prevent cors errors when sending a request to wikipedia api from a frontend application like in this case
@@ -162,21 +164,23 @@ function createCards(dogs){
         const cardTitle = createElement('h5', titleContainer, ['card-title'], dog.name);
 
     //put a heart icon next to title
-        const heartIcon = createElement('img', titleContainer, ['icon'], 'none', `./resources/img/heart/heart_icon_default.svg`, 'heart icon unclicked')
+        const heartIconSrc = (dog.likedBefore)? `./resources/img/heart/heart_icon_like.svg` : `./resources/img/heart/heart_icon_default.svg`;
+        const heartIconAlt = (dog.likedBefore)? 'heart icon clicked' : 'heart icon unclicked';
+        const heartIcon = createElement('img', titleContainer, ['icon'], 'none', heartIconSrc, heartIconAlt);
         //add id to heart icon so we can use it later to know which dog the user liked
         heartIcon.id = count;
         //and add eventlistener + eventhandler to it
-        let likedBefore = false;
+        
         heartIcon.addEventListener('click', function(event){
             //event.target.src = (likedBefore)? './resources/img/heart/heart_icon_default.svg' : './resources/img/heart/heart_icon_like.svg';
-            if(!likedBefore) {
+            if(!dogs[heartIcon.id].likedBefore) {
                 event.target.src = './resources/img/heart/heart_icon_like.svg';  
                 console.log('you like the '+ dogs[heartIcon.id].name);      //TEST
             } else {
                 event.target.src = './resources/img/heart/heart_icon_default.svg' 
                 console.log("you don't like the "+ dogs[heartIcon.id].name + " anymore");      //TEST     
             }
-            likedBefore = (likedBefore)? false : true;
+            dogs[heartIcon.id].likedBefore = (dogs[heartIcon.id].likedBefore)? false : true;
             
         });
 
@@ -225,9 +229,9 @@ function createCards(dogs){
         //create a li element for some properties of dog with class 'list-group-item' and append to listGroup (ul)
 
             for (const [key, value] of Object.entries(dog)) {
-                if(key ===  "coat_length" || key ===  "wikiLink" || key ===  "image_link" || key === "min_life_expectancy" || key === "max_life_expectancy" || key === "max_height_male" || key === "max_height_female" || key === "max_weight_female" || key === "max_weight_male" || key === "min_height_male" || key === "min_height_male" || key === "min_height_female" || key === "min_weight_male" || key === "min_weight_female" || key === "name"){
-                    continue;
-                } else {
+                //const excludeFromPawRating = ['likedBefore', 'coat_length', 'wikiLink', 'image_link', 'min_life_expectancy', 'max_life_expectancy', 'max_height_male', 'max_height_female', 'max_weight_female', 'max_weight_male', 'min_height_male', ]
+//("min_height_male" || key === "min_height_female" || key === "min_weight_male" || key === "min_weight_female" || key === "name")
+            if (value >= 0 && value <= 5 && value !== 'coat_length' && key !== 'likedBefore') {
             //create one li element for every key-value pair
                 const listGroupItem = createElement('li', listGroup, 'none', 'none');
 
