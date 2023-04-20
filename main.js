@@ -3,6 +3,7 @@ let basicURL = "https://api.api-ninjas.com/v1/dogs?";
 let offset = 0;
 let dogs = [];
 let showAll = false;
+let favoriteDogs = [];
 
 //function to get the input from search bar
 function getSearchInput() {
@@ -129,6 +130,7 @@ function showSearchMessage(dogs){
 function createCards(dogs){
       
     //START LOOP
+    let count = 0; //change to for-loop now that we actually need a counter???
     for (dog of dogs) {
     //create one div with classes 'col d-flex align-items-stretch' and another one inside it with class card for every dog + append to resultsList
         const resultsList = document.getElementById('resultsList');
@@ -161,11 +163,21 @@ function createCards(dogs){
 
     //put a heart icon next to title
         const heartIcon = createElement('img', titleContainer, ['icon'], 'none', `./resources/img/heart/heart_icon_default.svg`, 'heart icon unclicked')
+        //add id to heart icon so we can use it later to know which dog the user liked
+        heartIcon.id = count;
         //and add eventlistener + eventhandler to it
         let likedBefore = false;
         heartIcon.addEventListener('click', function(event){
-            event.target.src = (likedBefore)? './resources/img/heart/heart_icon_default.svg' : './resources/img/heart/heart_icon_like.svg';
+            //event.target.src = (likedBefore)? './resources/img/heart/heart_icon_default.svg' : './resources/img/heart/heart_icon_like.svg';
+            if(!likedBefore) {
+                event.target.src = './resources/img/heart/heart_icon_like.svg';  
+                console.log('you like the '+ dogs[heartIcon.id].name);      //TEST
+            } else {
+                event.target.src = './resources/img/heart/heart_icon_default.svg' 
+                console.log("you don't like the "+ dogs[heartIcon.id].name + " anymore");      //TEST     
+            }
             likedBefore = (likedBefore)? false : true;
+            
         });
 
     //put p with some text inside cardBody (since there is no description text in api data, let's put sth together using the data they give us...)
@@ -244,6 +256,8 @@ function createCards(dogs){
             cardBodyOptional.style.display = "none";
         }
         }
+        //console.log (dog.name + count);   //TESTING COUNTER
+        count ++;
     }  //END Of FOR LOOP
  }  //END OF CREATE CARDS FUNCTION
 
