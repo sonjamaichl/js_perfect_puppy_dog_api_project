@@ -38,7 +38,6 @@ function showResults() {
     document.getElementById('searchMessage').style.display = 'none';
     dogs = [];
     getData(getURL(getSearchInput));
-    //put function to add the SORTING OPTIONS here???
 }
 
 //function to get data from API and create cards for the search results
@@ -82,7 +81,7 @@ async function getData(url) {
                     showSortingOptions(dogs);
                 }
                 //create a card with image and info for each dog
-                createCards(dogs); //==> no loop needed here it's inside the function (could also be here, does it make a difference?)
+                createCards(dogs, 'resultsList'); //==> no loop needed here it's inside the function (could also be here, does it make a difference?)
                 //make spinner invisible
                 document.getElementById('spinner').style.display = 'none';   
             }
@@ -129,13 +128,13 @@ function showSearchMessage(dogs){
   }
 
 //function to create and display one card for each dog in list of results (dogs)
-function createCards(dogs){
+function createCards(dogs, parent){
       
     //START LOOP
     let count = 0; //change to for-loop now that we actually need a counter???
     for (dog of dogs) {
     //create one div with classes 'col d-flex align-items-stretch' and another one inside it with class card for every dog + append to resultsList
-        const resultsList = document.getElementById('resultsList');
+        const resultsList = document.getElementById(parent);
         const colDiv = createElement('div', resultsList, ['col'], 'none'); //adding classes 'd-flex' (and 'align-items-stretch'?) makes all cards the same height, but then they all open, when you only want to open one with "show more"
         const card = createElement('div', colDiv, ['card'], 'none');
     
@@ -176,11 +175,19 @@ function createCards(dogs){
             if(!dogs[heartIcon.id].likedBefore) {
                 event.target.src = './resources/img/heart/heart_icon_like.svg';  
                 console.log('you like the '+ dogs[heartIcon.id].name);      //TEST
+                favoriteDogs.push(dogs[heartIcon.id]);  //adding this dog to the array of favorite dogs
             } else {
                 event.target.src = './resources/img/heart/heart_icon_default.svg' 
-                console.log("you don't like the "+ dogs[heartIcon.id].name + " anymore");      //TEST     
+                console.log("you don't like the "+ dogs[heartIcon.id].name + " anymore");      //TEST  
+                for (let i = 0; i < favoriteDogs.length; i++){
+                    if (favoriteDogs[i].name === dogs[heartIcon.id].name){
+                        favoriteDogs.splice(i, 1);      //removing this dog from the array of favorite dogs  (array.splice.(i, 1) => removes 1 element at index i)
+                    }
+                }
             }
             dogs[heartIcon.id].likedBefore = (dogs[heartIcon.id].likedBefore)? false : true;
+            console.log('These are your current favorites: ')//TEST
+            console.log(favoriteDogs); //TEST
             
         });
 
@@ -361,7 +368,9 @@ function sortResults(array, property, order){
         console.log('This is my new array sorted by ' + property + ' in '+ order + ' order:')
         console.log(sortedArray);
         return sortedArray;
-}  
+} 
+
+document.getElementById('favoritesList').innerText = (favoriteDogs.length === 0)? 'You have no favorites saved yet.' : `You have ${favoritesList.length}:`;
 
 
 
