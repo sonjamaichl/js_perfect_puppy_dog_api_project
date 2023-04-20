@@ -3,7 +3,6 @@ let basicURL = "https://api.api-ninjas.com/v1/dogs?";
 let offset = 0;
 let dogs = [];
 let showAll = false;
-//let favoriteDogs = [];
 
 //function to get the input from search bar
 function getSearchInput() {
@@ -131,7 +130,7 @@ function showSearchMessage(dogs){
 function createCards(dogs, parent){
     //getting current version of favoriteDogs array from localStorage 
     let favoriteDogs = (typeof(localStorage.getItem('favoriteDogs'))=='undefined')? [] : JSON.parse(localStorage.getItem('favoriteDogs'));
-    console.log(favoriteDogs);
+    console.log(favoriteDogs);  //TEST
     //START LOOP
     let count = 0; //change to for-loop now that we actually need a counter???
     
@@ -191,8 +190,7 @@ function createCards(dogs, parent){
                 favoriteDogs.push(dogs[heartIcon.id]);  //adding this dog to favoriteDogs
                 localStorage.setItem('favoriteDogs', JSON.stringify(favoriteDogs)); //adding favoriteDogs array to Local Storage
 
-            } else {
-                event.target.src = './resources/img/heart/heart_icon_default.svg' 
+            } else { 
                 console.log("you don't like the "+ dogs[heartIcon.id].name + " anymore");      //TEST  
                 for (let i = 0; i < favoriteDogs.length; i++){
                     if (favoriteDogs[i].name === dogs[heartIcon.id].name){
@@ -201,6 +199,11 @@ function createCards(dogs, parent){
                         localStorage.setItem('favoriteDogs', JSON.stringify(favoriteDogs)); //adding favoriteDogs array to Local Storage
                     }
                 }
+                if(parent === 'resultsList'){
+                    event.target.src = './resources/img/heart/heart_icon_default.svg' 
+                } else if(parent === 'favoritesList'){
+                colDiv.style.display = 'none';
+            }
             }
             dogs[heartIcon.id].favorite = (dogs[heartIcon.id].favorite)? false : true;
             console.log('These are your current favorites: ')//TEST
