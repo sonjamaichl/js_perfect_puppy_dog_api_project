@@ -3,7 +3,7 @@ let basicURL = "https://api.api-ninjas.com/v1/dogs?";
 let offset = 0;
 let dogs = [];
 let showAll = false;
-let favoriteDogs = [];
+//let favoriteDogs = [];
 
 //function to get the input from search bar
 function getSearchInput() {
@@ -51,8 +51,8 @@ async function getData(url) {
      let newDogs = await response.json();
         for (newDog of newDogs) {
         //console.log(dog.name);  //TEST
-        //adding likedBefore property (to use later) and setting it to false
-            newDog.likedBefore = false;
+        //adding favorite property (to use later) and setting it to false
+            newDog.favorite = false;
         //getting wikipedia link for each dog from rapid api (before creating cards!)
             const formattedDogName = newDog.name.split("").map(char => (char === ' ')? '_' : char).join("");
             let wikiQuery =  `https://en.wikipedia.org/w/api.php?action=query&prop=info&format=json&titles=${formattedDogName}`;
@@ -63,7 +63,7 @@ async function getData(url) {
             let result = await response.json();
                     //console.log(result);    //TEST
             newDog.wikiLink = ('-1' in result.query.pages)? '' : `https://en.wikipedia.org/wiki/${formattedDogName}`;  //adding wikiLink property to each dog object to use later in createCards()-loop
-            console.log(newDog.name + ": " + newDog.wikiLink); //TEST  
+            //console.log(newDog.name + ": " + newDog.wikiLink); //TEST  
             dogs.push(newDog);
         }
 
@@ -73,7 +73,7 @@ async function getData(url) {
                 getData(getURL(getSearchInput));           //making getData() recursive so we can get more than 20 results for each search (with multiple requests)
         } else {
                 offset = 0;
-                console.log(dogs);      //TEST
+                //console.log(dogs);      //TEST
                 //show a message to user to let them know if and how many search results were found
                 showSearchMessage(dogs);
                  //display a select form (dropdown) to choose sorting options for the search results (only if there's more than 1 result!)
@@ -129,10 +129,23 @@ function showSearchMessage(dogs){
 
 //function to create and display one card for each dog in list of results (dogs)
 function createCards(dogs, parent){
-      
+    //getting current version of favoriteDogs array from localStorage 
+    let favoriteDogs = (typeof(localStorage.getItem('favoriteDogs'))=='undefined')? [] : JSON.parse(localStorage.getItem('favoriteDogs'));
+    console.log(favoriteDogs);
     //START LOOP
     let count = 0; //change to for-loop now that we actually need a counter???
+    
     for (dog of dogs) {
+
+    //checking if dog is in favorites list and setting property accordingly
+    dog.favorite = (favoriteDogs.length === 0)? false : (favoriteDogs.filter(e => e.name === dog.name).length > 0)? true : false;
+    /*for (favoriteDog of favoriteDogs) {
+        if(favoriteDog.name === dog.name) {
+            dog.favorite = true;
+        }
+    }*/
+    console.log(dog.name, dog.favorite);
+
     //create one div with classes 'col d-flex align-items-stretch' and another one inside it with class card for every dog + append to resultsList
         const resultsList = document.getElementById(parent);
         const colDiv = createElement('div', resultsList, ['col'], 'none'); //adding classes 'd-flex' (and 'align-items-stretch'?) makes all cards the same height, but then they all open, when you only want to open one with "show more"
@@ -163,29 +176,33 @@ function createCards(dogs, parent){
         const cardTitle = createElement('h5', titleContainer, ['card-title'], dog.name);
 
     //put a heart icon next to title
-        const heartIconSrc = (dog.likedBefore)? `./resources/img/heart/heart_icon_like.svg` : `./resources/img/heart/heart_icon_default.svg`;
-        const heartIconAlt = (dog.likedBefore)? 'heart icon clicked' : 'heart icon unclicked';
+        const heartIconSrc = (dog.favorite)? `./resources/img/heart/heart_icon_like.svg` : `./resources/img/heart/heart_icon_default.svg`;
+        const heartIconAlt = (dog.favorite)? 'heart icon clicked' : 'heart icon unclicked';
         const heartIcon = createElement('img', titleContainer, ['icon'], 'none', heartIconSrc, heartIconAlt);
         //add id to heart icon so we can use it later to know which dog the user liked
         heartIcon.id = count;
         //and add eventlistener + eventhandler to it
         
         heartIcon.addEventListener('click', function(event){
-            //event.target.src = (likedBefore)? './resources/img/heart/heart_icon_default.svg' : './resources/img/heart/heart_icon_like.svg';
-            if(!dogs[heartIcon.id].likedBefore) {
+            if(!dogs[heartIcon.id].favorite) {
                 event.target.src = './resources/img/heart/heart_icon_like.svg';  
                 console.log('you like the '+ dogs[heartIcon.id].name);      //TEST
-                favoriteDogs.push(dogs[heartIcon.id]);  //adding this dog to the array of favorite dogs
+                favoriteDogs = (favoriteDogs.length === 0)? favoriteDogs : JSON.parse(localStorage.getItem('favoriteDogs'));    //getting current version of favoriteDogs from local storage (if there is one, else just use the empty array)
+                favoriteDogs.push(dogs[heartIcon.id]);  //adding this dog to favoriteDogs
+                localStorage.setItem('favoriteDogs', JSON.stringify(favoriteDogs)); //adding favoriteDogs array to Local Storage
+
             } else {
                 event.target.src = './resources/img/heart/heart_icon_default.svg' 
                 console.log("you don't like the "+ dogs[heartIcon.id].name + " anymore");      //TEST  
                 for (let i = 0; i < favoriteDogs.length; i++){
                     if (favoriteDogs[i].name === dogs[heartIcon.id].name){
+                        favoriteDogs = JSON.parse(localStorage.getItem('favoriteDogs'));    //getting current version of favoriteDogs from localStorage (no checking if empty, we know there's at least on object!)
                         favoriteDogs.splice(i, 1);      //removing this dog from the array of favorite dogs  (array.splice.(i, 1) => removes 1 element at index i)
+                        localStorage.setItem('favoriteDogs', JSON.stringify(favoriteDogs)); //adding favoriteDogs array to Local Storage
                     }
                 }
             }
-            dogs[heartIcon.id].likedBefore = (dogs[heartIcon.id].likedBefore)? false : true;
+            dogs[heartIcon.id].favorite = (dogs[heartIcon.id].favorite)? false : true;
             console.log('These are your current favorites: ')//TEST
             console.log(favoriteDogs); //TEST
             
@@ -236,20 +253,18 @@ function createCards(dogs, parent){
         //create a li element for some properties of dog with class 'list-group-item' and append to listGroup (ul)
 
             for (const [key, value] of Object.entries(dog)) {
-                //const excludeFromPawRating = ['likedBefore', 'coat_length', 'wikiLink', 'image_link', 'min_life_expectancy', 'max_life_expectancy', 'max_height_male', 'max_height_female', 'max_weight_female', 'max_weight_male', 'min_height_male', ]
-//("min_height_male" || key === "min_height_female" || key === "min_weight_male" || key === "min_weight_female" || key === "name")
-            if (value >= 0 && value <= 5 && value !== 'coat_length' && key !== 'likedBefore') {
-            //create one li element for every key-value pair
-                const listGroupItem = createElement('li', listGroup, 'none', 'none');
+                if (value >= 0 && value <= 5 && value !== 'coat_length' && key !== 'favorite') {
+                //create one li element for every key-value pair
+                    const listGroupItem = createElement('li', listGroup, 'none', 'none');
 
-            //create a div tag inside the li and give it class "flex-container" + append to li
-                const flexContainer = createElement('div', listGroupItem, ['flex-container'], 'none');
+                //create a div tag inside the li and give it class "flex-container" + append to li
+                    const flexContainer = createElement('div', listGroupItem, ['flex-container'], 'none');
 
-            //create a p-tag inside the flex-container div and append
-                const characterTrait = createElement('p', flexContainer, 'none', `${nicerText(key)}: `);
+                //create a p-tag inside the flex-container div and append
+                    const characterTrait = createElement('p', flexContainer, 'none', `${nicerText(key)}: `);
 
-            //create an img-tag inside the flex-container div and append
-                const pawRating = createElement('img', flexContainer, ['paw-rating'], 'none', `./resources/img/paws/${value}_paws.svg`, `${value} out of 5 paws`);
+                //create an img-tag inside the flex-container div and append
+                    const pawRating = createElement('img', flexContainer, ['paw-rating'], 'none', `./resources/img/paws/${value}_paws.svg`, `${value} out of 5 paws`);
             }
         }
 
@@ -369,10 +384,6 @@ function sortResults(array, property, order){
         console.log(sortedArray);
         return sortedArray;
 } 
-
-document.getElementById('favoritesList').innerText = (favoriteDogs.length === 0)? 'You have no favorites saved yet.' : `You have ${favoritesList.length}:`;
-
-
 
 
 //to do & ideas:
