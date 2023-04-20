@@ -134,7 +134,7 @@ function createCards(dogs){
         const resultsList = document.getElementById('resultsList');
         const colDiv = createElement('div', resultsList, ['col'], 'none'); //adding classes 'd-flex' (and 'align-items-stretch'?) makes all cards the same height, but then they all open, when you only want to open one with "show more"
         const card = createElement('div', colDiv, ['card'], 'none');
-        
+    
     //put img of dog inside card and add card-img-top class + alt
         const newImg = createElement('img', card, ['card-img-top'], 'none', dog.image_link, dog.name);
 
@@ -146,13 +146,27 @@ function createCards(dogs){
 
     //put another div with class card-body inside card
         const cardBody = createElement('div', card, ['card-body', 'd-flex', 'flex-column', 'justify-content-between'], 'none');
+
+   
         
     //create div for h5 and card text (needed to adjust text & button with flex later)
         const cardText = createElement('div', cardBody, 'none', 'none');
         cardText.style.height = '10rem';            //this makes all cardTexts the same height (since img and buttons are same height as well, all cards are now equal-sized, except when show more was clicked)
-        
-    //put h5 with dog breed's name in cardBody
-        const cardTitle = createElement('h5', cardText, ['card-title'], dog.name);
+     
+    //create a div with classes container d-flex and justify-content-between to contain card title and heart icon
+        const titleContainer = createElement('div', cardText, ['container', 'd-flex', 'justify-content-between', 'title-container'], 'none');    
+
+    //put h5 with dog breed's name in cardText inside titleContainer
+        const cardTitle = createElement('h5', titleContainer, ['card-title'], dog.name);
+
+    //put a heart icon next to title
+        const heartIcon = createElement('img', titleContainer, ['icon'], 'none', `./resources/img/heart/heart_icon_default.svg`, 'heart icon unclicked')
+        //and add eventlistener + eventhandler to it
+        let likedBefore = false;
+        heartIcon.addEventListener('click', function(event){
+            event.target.src = (likedBefore)? './resources/img/heart/heart_icon_default.svg' : './resources/img/heart/heart_icon_like.svg';
+            likedBefore = (likedBefore)? false : true;
+        });
 
     //put p with some text inside cardBody (since there is no description text in api data, let's put sth together using the data they give us...)
         let cardDescription = document.createElement('p');

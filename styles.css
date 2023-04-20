@@ -94,3 +94,12 @@ li {
 .test-question-container {
     margin-top: 3rem;
 }
+
+.icon {
+    width: 1.5rem;
+}
+
+.title-container {
+    padding: 0px;
+    align-items: flex-start;
+}
