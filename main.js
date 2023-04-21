@@ -8,11 +8,13 @@ let showAll = false;
 function getSearchInput() {
     return showAll? "1" : document.getElementById('searchInput').value;  //sets min_height to 1 (matches all dogs) if showAll is true
 }
+
 //function to create search URL according to user input
 function getURL(func){
     let searchParameter = showAll? "min_height=" : "name=";
     return basicURL + searchParameter + func().toLowerCase() + "&offset=" + offset;
 }
+
 //adding event listeners to SEARCH & SHOW ALL button that triggers showResults() with different results depending on value of showAll(true/false)
 const searchButton = document.getElementById('searchButton');
 const showAllButton = document.getElementById('showAll');
@@ -23,18 +25,20 @@ btn.addEventListener('click', function(event){
     showResults();
 })
 }
-//adding functionality to ENTER key (same as clicking searchButton)
+
+//adding functionality to ENTER key (same as clicking searchButton)     ==> THIS PRODUCES AN ERROR FOR THE OTHER PAGES (FAVORITES & BREEDS_TEST.HTML, BUT SCRIPT IST STILL RUNNING)
 document.getElementById('searchInput').addEventListener('keydown', function(event){
     if (event.key === "Enter") {
         event.preventDefault();
         searchButton.click();  
     }
 });
+
 //function to show the search results
 function showResults() {
     document.getElementById('spinner').style.display = 'inline-block';
-    document.getElementById('resultsList').innerText = '';
-    document.getElementById('sortOptions').innerText = '';
+    const elementsToClear = ['resultsList', 'sortOptions', 'filterOptions'];
+    elementsToClear.forEach(element => document.getElementById(element).innerText = '');
     document.getElementById('searchMessage').style.display = 'none';
     dogs = [];
     getData(getURL(getSearchInput));
@@ -79,6 +83,7 @@ async function getData(url) {
                  //display a select form (dropdown) to choose sorting options for the search results (only if there's more than 1 result!)
                 if (dogs.length > 1){
                     showSortingOptions(dogs);
+                    showFilteringOptions(dogs);
                 }
                 //create a card with image and info for each dog
                 createCards(dogs, 'resultsList'); //==> no loop needed here it's inside the function (could also be here, does it make a difference?)
@@ -105,7 +110,6 @@ function createElement(htmlTag, parentEl, classesOfEl, innerTextOfEl, source, al
     parentEl.appendChild(newEl);
     return newEl;
   }
-  //const newHeading = createElement('newHeading', 'h1', document.body, 'basic', 'Hello');  // this will create a new h1 Tag with a text of 'Hello, class of basic and append it to document.body and store it in the variable newHeading
 
 //a function displaying a message to user to let them know if and how many results were found
 function showSearchMessage(dogs){
@@ -139,16 +143,12 @@ function createCards(dogs, parent){
 
     //checking if dog is in favorites list and setting property accordingly
     dog.favorite = (favoriteDogs.length === 0)? false : (favoriteDogs.filter(e => e.name === dog.name).length > 0)? true : false;
-    /*for (favoriteDog of favoriteDogs) {
-        if(favoriteDog.name === dog.name) {
-            dog.favorite = true;
-        }
-    }*/
-    console.log(dog.name, dog.favorite);
+    //console.log(dog.name, dog.favorite);  //TEST
 
     //create one div with classes 'col d-flex align-items-stretch' and another one inside it with class card for every dog + append to resultsList
         const resultsList = document.getElementById(parent);
         const colDiv = createElement('div', resultsList, ['col'], 'none'); //adding classes 'd-flex' (and 'align-items-stretch'?) makes all cards the same height, but then they all open, when you only want to open one with "show more"
+        colDiv.id = dog.name;   //so we can access it later when filtering results to make cards disappear from resultsList
         const card = createElement('div', colDiv, ['card'], 'none');
     
     //put img of dog inside card and add card-img-top class + alt
@@ -333,40 +333,87 @@ return newString;
 }               //could use .map() here for shorter code?
 
 
+//a function to shoe the filtering options when results are displayed
 function showFilteringOptions(dogs){
-    document.getElementById('filterOptions').innerText = '';
+    const filterOptions = document.getElementById('filterOptions');
     //const filterFormContainer = createElement('div', )
+    filterOptions.innerText = '';
+    //const filterOptionsContainer = createElement('div', filterOptions, ['alert', 'alert-light', 'container', 'd-flex-column'], 'none');
+    //const filterOptionsSizeForm = createElement('div', filterOptions, ['form-check'], 'none');
+    const filterOptionSizeText = createElement('p', filterOptions, 'none', 'Filter results by size:');
+    const dogSizes = ['miniature', 'small', 'medium', 'large', 'giant'];
+    for (dogSize of dogSizes){
+        const filterSizeFormCheck = createElement('div', filterOptions, ['form-check', 'container'], 'none');
+        const sizeInputCheckbox = createElement('input', filterSizeFormCheck, ['form-check-input'], 'none');
+        sizeInputCheckbox.type = 'checkbox';
+        sizeInputCheckbox.name ='size';
+        sizeInputCheckbox.id = dogSize + 'size'
+        sizeInputCheckbox.value = dogSize;
+        const sizeInputLabel = createElement('label', filterSizeFormCheck, ['form-check-label'], dogSize);
+        sizeInputLabel.For = sizeInputCheckbox.id;
+        filterOptions.style.marginBottom = '1rem'; //CSS!
+        //adding eventlistener to each form + eventhandler to filter results according to options user has chosen
+        sizeInputCheckbox.addEventListener('change', function(event){
+            const value = event.target.value;
+            const property = event.target.name;
+            //filter array of search results (dogs) by the checkboxes value
+            let filteredDogs = filterResults(dogs, property, value);
+            if (event.target.checked){  // make filteredDogs disappear (this works because it's a reversed filter) 
+                for (filteredDog of filteredDogs){
+                    document.getElementById(filteredDog.name).style.display = 'none'; 
+                }
+            } else {        // make filteredDogs reappear
+                for (filteredDog of filteredDogs){
+                    document.getElementById(filteredDog.name).style.display = 'inline-block';   //finding the 
+                }
+            }
+        })
+    }
 }
 
+// works but so far only when one box is checked => change function and make it work for multiple checkboxes at the sime time!!!
+//should the searchMessage change when filtering (e.g. "5 results found for Retriever - large" instead of "6 results found for Retriever")???
+
+function filterResults(array, property, value){
+    const filteredArray = array.filter(element => element[property] !== value); //returns a new array with all the dogs that DON'T match the criteria => so we can use this array to make their cards disappear
+    return filteredArray;
+}
+
+
+
+
+//a function to show the sorting options when results are displayed
 function showSortingOptions(dogs){
     const sortOptions = document.getElementById('sortOptions');
     sortOptions.innerText = '';
     const selectFormContainer = createElement('div', sortOptions, ['container', 'd-flex', 'justify-content-around'], 'none');
     selectFormContainer.style.marginBottom = '1rem';      //should probably give it a class and do that in CSS, just for now to see how it looks...
-    const labelForSelectForm = createElement('label', selectFormContainer, 'none', 'Sort results:')
     //labelForSelectForm.style.width ='50%';
     const selectForm = createElement('select', selectFormContainer, ['form-select', 'form-select-sm'], 'none');
+    selectForm.ariaLabel = 'Sort search results';
     //selectForm.style.minWidth = '25%'; //==> CSS!
-    const optionDefault = createElement('option', selectForm, 'none', 'alphabetically A-Z');
-    optionDefault.value = 'Alphabetically A-Z';
+    const optionDefault = createElement('option', selectForm, 'none', 'Sort results by');
+    optionDefault.value = 'name increasing';    //choosing 'Sort results by' (= no sorting) sets resultsList back to default (alphabetical order A-Z)
     //optionDefault.value.selected = true;
     //loop through some of the dog object's properties to get sorting options
     for (const [key] of Object.entries(dogs[0])) {
-        const noSortingOptions = ['name', 'image_link', 'coat_length', 'wikiLink', 'min_height_female', 'max_height_female', 'min_height_male', 'min_weight_female', 'max_weight_female', 'min_weight_male', 'min_life_expectancy'];
+        const noSortingOptions = ['favorite','image_link', 'coat_length', 'wikiLink', 'min_height_female', 'max_height_female', 'min_height_male', 'min_weight_female', 'max_weight_female', 'min_weight_male', 'min_life_expectancy'];
         if(noSortingOptions.includes(key)){
             continue
         } else {
-        const newOptionIncreasing = createElement('option', selectForm, 'none', `${nicerText(key)}: lowest to highest`);
+        let sortingOptionTextIncreasing = (key === 'name')? 'Alphabet A-Z' : `${nicerText(key)}: lowest to highest`;
+        let sortingOptionTextDecreasing = (key === 'name')? 'Alphabet Z-A' : `${nicerText(key)}: highest to lowest`;
+        const newOptionIncreasing = createElement('option', selectForm, 'none', sortingOptionTextIncreasing);
         newOptionIncreasing.value = key+' increasing';
-        const newOptionDecreasing = createElement('option', selectForm, 'none', `${nicerText(key)}: highest to lowest`);
+        const newOptionDecreasing = createElement('option', selectForm, 'none', sortingOptionTextDecreasing);
         newOptionDecreasing.value = key+' decreasing';
     }
     }
 
-    //add eventlistener + eventhandler function to selectForm
-    selectForm.addEventListener('change', getSelectedValue);
+    //add eventlistener + eventhandler function to selectForm so that it actually sorts results
+    selectForm.addEventListener('change', getSelectedValueAndSort);
     
-    function getSelectedValue(){
+    function getSelectedValueAndSort(){
         let property = selectForm.value.split(' ')[0]; //split the value in two and store first as property and second as 
         console.log(property);
         let order = selectForm.value.split(' ')[1];

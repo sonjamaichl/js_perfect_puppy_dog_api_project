@@ -55,7 +55,7 @@ function addQuestion(num, text){
 //a function to add a previous and/or next button to navigate between the pages (q1 only has next button, last q only has previous button, everything between both buttons)
 function addNavButton(num){
     if (num === 1 || num === questionsTotal){
-        const buttonText = (num === 1)? 'Next' : 'Previous';
+        const buttonText = (num === 1)? 'Next >>' : '<< Previous';
         const onlyButtonContainer = createElement('div', testOverlay, ['container', 'd-flex', 'justify-content-center'], 'none');
         const onlyButton = createElement('button', onlyButtonContainer, ['btn', 'btn-outline', 'btn-outline-primary'], buttonText);
         const eventHandler = (num === 1)? question2 : question4;    //hard-coded => can we change that depending on the value of questionsTotal?
