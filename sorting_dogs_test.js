@@ -72,13 +72,20 @@ sortArrayBy(myDogs, 'barking', 'decreasing');
 sortArrayBy(myDogs, 'barking', 'increasing');
 
 
-//a funciton to filter an array by a specific property's value
+//a funciton that filters an array by a specific property's value and returns all the values that match the criteria
 function filterArrayBy(array, property, value){
     const filteredArray = array.filter(element => element[property] === value);
     return filteredArray;
 }
 
+////a funciton that filters an array by a specific property's value and returns all the values that DON'Tmatch the criteria
+function filterArrayReverse(array, property, value){
+    const filteredArray = array.filter(element => element[property] !== value);
+    return filteredArray;  
+}
+
 console.log(filterArrayBy(myDogs, 'size', 5));
+console.log(filterArrayReverse(myDogs, 'size', 1));
 
 console.log(filterArrayBy(myDogs, 'barking', 10));
 console.log(myDogs);
