@@ -34,6 +34,7 @@ document.getElementById('searchInput').addEventListener('keydown', function(even
 function showResults() {
     document.getElementById('spinner').style.display = 'inline-block';
     document.getElementById('resultsList').innerText = '';
+    document.getElementById('sortOptions').innerText = '';
     document.getElementById('searchMessage').style.display = 'none';
     dogs = [];
     getData(getURL(getSearchInput));
@@ -215,25 +216,25 @@ function createCards(dogs, parent){
         let cardDescription = document.createElement('p');
         
         //calculate average weight of dog and use this value to decide which size the dog is
-        let size = '';
+        //let size = '';        //size should be a property of each dog not a variable!
         function averageWeight(){
             return (dog.min_weight_female+dog.max_weight_female+dog.min_weight_male+dog.max_weight_male)/4
         }
         //console.log(averageWeight(dogs[i]));
         if(averageWeight() < 12) {
-            size = 'miniature';
+            dog.size = 'miniature';
         } else if(averageWeight() < 25) {
-            size = 'small';
+            dog.size = 'small';
         } else if (averageWeight() < 60) {
-            size = 'medium';
+            dog.size = 'medium';
         } else if (averageWeight() < 100) {
-            size = 'large';
+            dog.size = 'large';
         } else if (averageWeight() >= 100) {
-            size = 'giant';
+            dog.size = 'giant';
         }
         
         //put description text together and append to cardText
-        let textSnippet = (dog.min_life_expectancy === dog.max_life_expectancy)? `is a ${size} dog with a life expectancy of about ${dog.min_life_expectancy} years.` : `is a ${size} dog with a life expectancy of ${dog.min_life_expectancy} - ${dog.max_life_expectancy} years.`;
+        let textSnippet = (dog.min_life_expectancy === dog.max_life_expectancy)? `is a ${dog.size} dog with a life expectancy of about ${dog.min_life_expectancy} years.` : `is a ${dog.size} dog with a life expectancy of ${dog.min_life_expectancy} - ${dog.max_life_expectancy} years.`;
         let descriptionText = (dog.wikiLink === '')? `The ${dog.name} ${textSnippet}` : `<span>The <a class="link-primary link-offset-2 link-underline-opacity-25 link-underline-opacity-100-hover" target="_blank" href="${dog.wikiLink}">${dog.name}</a> ${textSnippet}</span>`;
         cardDescription.innerHTML = descriptionText;
         cardText.appendChild(cardDescription);
@@ -256,7 +257,7 @@ function createCards(dogs, parent){
         //create a li element for some properties of dog with class 'list-group-item' and append to listGroup (ul)
 
             for (const [key, value] of Object.entries(dog)) {
-                if (value >= 0 && value <= 5 && value !== 'coat_length' && key !== 'favorite') {
+                if (typeof value === 'number'  && value >= 0 && value <= 5 && key !== 'coat_length') { //coat length were all either 1 or 2 (doesn't make sense!)
                 //create one li element for every key-value pair
                     const listGroupItem = createElement('li', listGroup, 'none', 'none');
 
@@ -331,8 +332,15 @@ function nicerText(string) {
 return newString;
 }               //could use .map() here for shorter code?
 
+
+function showFilteringOptions(dogs){
+    document.getElementById('filterOptions').innerText = '';
+    //const filterFormContainer = createElement('div', )
+}
+
 function showSortingOptions(dogs){
-    document.getElementById('sortOptions').innerText = '';
+    const sortOptions = document.getElementById('sortOptions');
+    sortOptions.innerText = '';
     const selectFormContainer = createElement('div', sortOptions, ['container', 'd-flex', 'justify-content-around'], 'none');
     selectFormContainer.style.marginBottom = '1rem';      //should probably give it a class and do that in CSS, just for now to see how it looks...
     const labelForSelectForm = createElement('label', selectFormContainer, 'none', 'Sort results:')
@@ -369,7 +377,7 @@ function showSortingOptions(dogs){
     document.getElementById('searchMessage').style.display = 'none';
 
     //showResults(sortResults(dogs, property, order));
-    createCards(sortResults(dogs, property, order));
+    createCards(sortResults(dogs, property, order), 'resultsList');
     }
     }
     
@@ -390,8 +398,6 @@ function sortResults(array, property, order){
 
 
 //to do & ideas:
-
-// ==> hide sorting options while searching (when spinner is running)
 
 // 1) add a try/catch block to the async functions fetching data from the API!!!
 // 2) add a tooltip to let user know they will go to wikipedia if they click on the link in the description text
