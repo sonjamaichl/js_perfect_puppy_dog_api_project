@@ -2,6 +2,8 @@
 let basicURL = "https://api.api-ninjas.com/v1/dogs?";
 let offset = 0;
 let dogs = [];
+let filteredDogs = [];
+let sortedDogs = [];
 let showAll = false;
 
 //function to get the input from search bar
@@ -342,6 +344,7 @@ function showFilteringOptions(dogs){
     //const filterOptionsSizeForm = createElement('div', filterOptions, ['form-check'], 'none');
     const filterOptionSizeText = createElement('p', filterOptions, 'none', 'Filter results by size:');
     const dogSizes = ['miniature', 'small', 'medium', 'large', 'giant'];
+    let chosenSizes = [];
     for (dogSize of dogSizes){
         const filterSizeFormCheck = createElement('div', filterOptions, ['form-check', 'container'], 'none');
         const sizeInputCheckbox = createElement('input', filterSizeFormCheck, ['form-check-input'], 'none');
@@ -356,30 +359,48 @@ function showFilteringOptions(dogs){
         sizeInputCheckbox.addEventListener('change', function(event){
             const value = event.target.value;
             const property = event.target.name;
-            //filter array of search results (dogs) by the checkboxes value
-            let filteredDogs = filterResults(dogs, property, value);
-            if (event.target.checked){  // make filteredDogs disappear (this works because it's a reversed filter) 
-                for (filteredDog of filteredDogs){
-                    document.getElementById(filteredDog.name).style.display = 'none'; 
-                }
-            } else {        // make filteredDogs reappear
-                for (filteredDog of filteredDogs){
-                    document.getElementById(filteredDog.name).style.display = 'inline-block';   //finding the 
-                }
+            if (event.target.checked){ 
+                //add chosen value to an array of chosen values
+                chosenSizes.push(value);
+                console.log(chosenSizes);
+            } else {
+                //remove chosen value from the array of chosen values
+                chosenSizes = chosenSizes.filter(size => size !== value);
+                console.log(chosenSizes);
             }
+            //filter array of search results (dogs) by the checkboxes value
+            console.log('You chose the following sizes: '); //TEST
+            console.log(chosenSizes)                        //TEST
+            filterResults(dogs, property, chosenSizes);   
+            displayOnlyFilteredDogs(dogs, filteredDogs, chosenSizes);
         })
     }
 }
 
-// works but so far only when one box is checked => change function and make it work for multiple checkboxes at the sime time!!!
 //should the searchMessage change when filtering (e.g. "5 results found for Retriever - large" instead of "6 results found for Retriever")???
+//if user checks some filter checkboxes and then unchecks all => all dogs are gone => should there be an 'all' checkbox or 'remove filters' button or sth like that?
 
-function filterResults(array, property, value){
-    const filteredArray = array.filter(element => element[property] !== value); //returns a new array with all the dogs that DON'T match the criteria => so we can use this array to make their cards disappear
-    return filteredArray;
+function filterResults(dogs, property, values){
+    filteredDogs = [];
+    for (let i = 0; i < dogs.length; i++){
+        for (value of values){              //could use values.forEach instead
+            if (dogs[i][property] === value)
+            filteredDogs.push(dogs[i]);
+        }
+    }
+    console.log('filtered dogs:')   //TEST
+    console.log(filteredDogs);    //TEST
+    return filteredDogs;
 }
 
-
+function displayOnlyFilteredDogs(dogs, filteredDogs, chosenSizes){
+    if (chosenSizes.length === 0){
+        filteredDogs = dogs;    //if no checkboxes are checked, all search results will be displayed
+    }
+    for (dog of dogs){      // DISPLAY IF ON FILTERED DOGS ELSE HIDE
+        document.getElementById(dog.name).style.display = (filteredDogs.includes(dog))? 'inline-block' : 'none';
+    }
+    }
 
 
 //a function to show the sorting options when results are displayed
@@ -424,25 +445,36 @@ function showSortingOptions(dogs){
     document.getElementById('searchMessage').style.display = 'none';
 
     //showResults(sortResults(dogs, property, order));
-    createCards(sortResults(dogs, property, order), 'resultsList');
+    if (filteredDogs.length === 0){
+        createCards(sortResults(dogs, property, order), 'resultsList')      // sort all results if there are no filters
+    } else{
+        createCards(sortResults(filteredDogs, property, order), 'resultsList')  // only sort filtered results 
     }
-    }
+}
+}
     
 //a function to sort an array by a specific property's values in increasing or decreasing order
 function sortResults(array, property, order){
-    let sortedArray = [];
+    sortedDogs = [];
         if (order === 'increasing'){
-            sortedArray = array.sort((a, b) => (a[property] > b[property])? 1 : -1);
+            sortedDogs = array.sort((a, b) => (a[property] > b[property])? 1 : -1);
         } else if (order === 'decreasing'){
-            sortedArray = array.sort((a, b) => (a[property] < b[property])? 1 : -1);
+            sortedDogs = array.sort((a, b) => (a[property] < b[property])? 1 : -1);
         } else {
             console.log ("sorry, couldn't sort array");
         }
-        console.log('This is my new array sorted by ' + property + ' in '+ order + ' order:')
-        console.log(sortedArray);
-        return sortedArray;
+        //console.log('This is my new array sorted by ' + property + ' in '+ order + ' order:')
+        //console.log(sortedDogs);
+        return sortedDogs;
 } 
 
+
+//SORTING & FILTERING TEST
+//just sorting or just filtering work both fine
+//sorting then filtering works, even with multiple boxes checked (checking and unchecking makes dogs disappear and reappear like it should)
+//filtering then sorting works
+//sorting then filtering then sorting works
+//sorting then filtering then sorting then filtering AGAIN doesn't work => TYPE ERROR (cannot read properties of null reading style => lines 401/375) => FIX!!!
 
 //to do & ideas:
 
