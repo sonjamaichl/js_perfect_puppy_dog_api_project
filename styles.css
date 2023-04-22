@@ -103,3 +103,7 @@ li {
     padding: 0px;
     align-items: flex-start;
 }
+
+.sort-option-li {
+    padding-right: 1rem;
+}

@@ -1,9 +1,8 @@
 //GLOBAL VARIABLES  ==> do they all need to be global? check and if not, put them somewhere else
-let basicURL = "https://api.api-ninjas.com/v1/dogs?";
 let offset = 0;
 let dogs = [];
-let filteredDogs = [];
-let sortedDogs = [];
+let filteredDogs = [];  //necessary???
+let sortedDogs = [];    //necessary?
 let showAll = false;
 
 //function to get the input from search bar
@@ -13,6 +12,7 @@ function getSearchInput() {
 
 //function to create search URL according to user input
 function getURL(func){
+    let basicURL = "https://api.api-ninjas.com/v1/dogs?";
     let searchParameter = showAll? "min_height=" : "name=";
     return basicURL + searchParameter + func().toLowerCase() + "&offset=" + offset;
 }
@@ -164,9 +164,7 @@ function createCards(dogs, parent){
 
     //put another div with class card-body inside card
         const cardBody = createElement('div', card, ['card-body', 'd-flex', 'flex-column', 'justify-content-between'], 'none');
-
-   
-        
+  
     //create div for h5 and card text (needed to adjust text & button with flex later)
         const cardText = createElement('div', cardBody, 'none', 'none');
         cardText.style.height = '10rem';            //this makes all cardTexts the same height (since img and buttons are same height as well, all cards are now equal-sized, except when show more was clicked)
@@ -218,22 +216,7 @@ function createCards(dogs, parent){
         let cardDescription = document.createElement('p');
         
         //calculate average weight of dog and use this value to decide which size the dog is
-        //let size = '';        //size should be a property of each dog not a variable!
-        function averageWeight(){
-            return (dog.min_weight_female+dog.max_weight_female+dog.min_weight_male+dog.max_weight_male)/4
-        }
-        //console.log(averageWeight(dogs[i]));
-        if(averageWeight() < 12) {
-            dog.size = 'miniature';
-        } else if(averageWeight() < 25) {
-            dog.size = 'small';
-        } else if (averageWeight() < 60) {
-            dog.size = 'medium';
-        } else if (averageWeight() < 100) {
-            dog.size = 'large';
-        } else if (averageWeight() >= 100) {
-            dog.size = 'giant';
-        }
+        dog.size = calculateSize(dog);   
         
         //put description text together and append to cardText
         let textSnippet = (dog.min_life_expectancy === dog.max_life_expectancy)? `is a ${dog.size} dog with a life expectancy of about ${dog.min_life_expectancy} years.` : `is a ${dog.size} dog with a life expectancy of ${dog.min_life_expectancy} - ${dog.max_life_expectancy} years.`;
@@ -257,18 +240,14 @@ function createCards(dogs, parent){
             const listGroup = createElement('ul', cardBodyOptional, ['list-group', 'list-group-flush'], 'none');
 
         //create a li element for some properties of dog with class 'list-group-item' and append to listGroup (ul)
-
             for (const [key, value] of Object.entries(dog)) {
                 if (typeof value === 'number'  && value >= 0 && value <= 5 && key !== 'coat_length') { //coat length were all either 1 or 2 (doesn't make sense!)
                 //create one li element for every key-value pair
                     const listGroupItem = createElement('li', listGroup, 'none', 'none');
-
                 //create a div tag inside the li and give it class "flex-container" + append to li
                     const flexContainer = createElement('div', listGroupItem, ['flex-container'], 'none');
-
                 //create a p-tag inside the flex-container div and append
                     const characterTrait = createElement('p', flexContainer, 'none', `${nicerText(key)}: `);
-
                 //create an img-tag inside the flex-container div and append
                     const pawRating = createElement('img', flexContainer, ['paw-rating'], 'none', `./resources/img/paws/${value}_paws.svg`, `${value} out of 5 paws`);
             }
@@ -337,7 +316,9 @@ return newString;
 
 //a function to shoe the filtering options when results are displayed
 function showFilteringOptions(dogs){
-    const filterOptions = document.getElementById('filterOptions');
+    const filterOptionsDiv = document.getElementById('filterOptions');
+    let filterObject = createFilterObject(dogs);
+
     //const filterFormContainer = createElement('div', )
     filterOptions.innerText = '';
     //const filterOptionsContainer = createElement('div', filterOptions, ['alert', 'alert-light', 'container', 'd-flex-column'], 'none');
@@ -377,9 +358,30 @@ function showFilteringOptions(dogs){
     }
 }
 
-//should the searchMessage change when filtering (e.g. "5 results found for Retriever - large" instead of "6 results found for Retriever")???
-//if user checks some filter checkboxes and then unchecks all => all dogs are gone => should there be an 'all' checkbox or 'remove filters' button or sth like that?
 
+//should the searchMessage change when filtering (e.g. "5 results found for Retriever - large" instead of "6 results found for Retriever")???
+
+//a function to create an object that contains all the chosen filtering options
+function createFilterObject(array) {
+    let chosenFilters = {};
+    const filterOptions = ['size'];
+    //pushing all properties shown in the paw rating to the array of filterOptionProperties
+    for (const [key, value] of Object.entries(array[0])) {
+        if (typeof value === 'number'  && value >= 0 && value <= 5 && key !== 'coat_length'){
+            filterOptions.push(key);
+        }
+    }
+    console.log('These are all the filtering options:')
+    console.log(filterOptions);    //TEST
+    //making each value in the filterOptionProperties array a property of the chosenFilters Object
+    for (let i = 0; i < filterOptions.length; i++){
+        chosenFilters[filterOptions[i]] = [];   //default value is an empty array = no options chosen (should have same behavior as all options chosen!) 
+    }
+    //filterOptionProperties.forEach(chosenFilters => {chosenFilters.filterOption = filterOption});
+    console.log(chosenFilters);
+}
+
+// function to filter the results according to chosen options => change function to use filterObject instead of property and values array!
 function filterResults(dogs, property, values){
     filteredDogs = [];
     for (let i = 0; i < dogs.length; i++){
@@ -393,6 +395,9 @@ function filterResults(dogs, property, values){
     return filteredDogs;
 }
 
+
+// a function to display the results that match with the chosen filters and hide the rest
+
 function displayOnlyFilteredDogs(dogs, filteredDogs, chosenSizes){
     if (chosenSizes.length === 0){
         filteredDogs = dogs;    //if no checkboxes are checked, all search results will be displayed
@@ -402,56 +407,65 @@ function displayOnlyFilteredDogs(dogs, filteredDogs, chosenSizes){
     }
     }
 
-
 //a function to show the sorting options when results are displayed
 function showSortingOptions(dogs){
     const sortOptions = document.getElementById('sortOptions');
     sortOptions.innerText = '';
-    const selectFormContainer = createElement('div', sortOptions, ['container', 'd-flex', 'justify-content-around'], 'none');
-    selectFormContainer.style.marginBottom = '1rem';      //should probably give it a class and do that in CSS, just for now to see how it looks...
-    //labelForSelectForm.style.width ='50%';
-    const selectForm = createElement('select', selectFormContainer, ['form-select', 'form-select-sm'], 'none');
-    selectForm.ariaLabel = 'Sort search results';
-    //selectForm.style.minWidth = '25%'; //==> CSS!
-    const optionDefault = createElement('option', selectForm, 'none', 'Sort results by');
-    optionDefault.value = 'name increasing';    //choosing 'Sort results by' (= no sorting) sets resultsList back to default (alphabetical order A-Z)
-    //optionDefault.value.selected = true;
-    //loop through some of the dog object's properties to get sorting options
+    const sortResultsButton = createElement('button', sortOptions, ['btn', 'btn-secondary', 'dropdown-toggle'], 'Sort results by');
+    sortResultsButton.type = 'button';
+    sortResultsButton.setAttribute('data-bs-toggle', 'dropdown');
+    sortResultsButton.setAttribute('aria-expanded', 'false');
+    //creating an ul for the sorting options
+    const sortOptionsList = createElement('ul', sortOptions, ['dropdown-menu'], 'none');
+    //creating a li element that contains a formcheck, input type radio and label for radio for each property to sort by
     for (const [key] of Object.entries(dogs[0])) {
-        const noSortingOptions = ['favorite','image_link', 'coat_length', 'wikiLink', 'min_height_female', 'max_height_female', 'min_height_male', 'min_weight_female', 'max_weight_female', 'min_weight_male', 'min_life_expectancy'];
-        if(noSortingOptions.includes(key)){
+        const noSortOptions = ['favorite','image_link', 'coat_length', 'wikiLink', 'min_height_female', 'max_height_female', 'min_height_male', 'min_weight_female', 'max_weight_female', 'min_weight_male', 'min_life_expectancy'];
+        if(noSortOptions.includes(key)){
             continue
         } else {
-        let sortingOptionTextIncreasing = (key === 'name')? 'Alphabet A-Z' : `${nicerText(key)}: lowest to highest`;
-        let sortingOptionTextDecreasing = (key === 'name')? 'Alphabet Z-A' : `${nicerText(key)}: highest to lowest`;
-        const newOptionIncreasing = createElement('option', selectForm, 'none', sortingOptionTextIncreasing);
-        newOptionIncreasing.value = key+' increasing';
-        const newOptionDecreasing = createElement('option', selectForm, 'none', sortingOptionTextDecreasing);
-        newOptionDecreasing.value = key+' decreasing';
-    }
-    }
+            for (let i=0; i<2; i++){
+            let sortOrder = (i === 0)? 'increasing' : 'decreasing';
+            let orderText = (sortOrder === 'increasing')? 'lowest to highest' : 'highest to lowest';
+            const sortOptionsListElement = createElement('li', sortOptionsList, ['sort-option-li'], 'none')
+            const sortOptionsFormCheck = createElement('div', sortOptionsListElement, ['form-check'], 'none');
+            const sortOptionInput = createElement('input', sortOptionsFormCheck, ['form-check-input'], 'none');
+            sortOptionInput.type = 'radio';
+            sortOptionInput.name = 'sort-options';
+            sortOptionInput.value = `${key} ${sortOrder}`;
+            sortOptionInput.id = `${key} ${sortOrder}`;
+            let sortOptionLabelText = (key === 'name')? 'Alphabet Z-A' : `${nicerText(key)}: ${orderText}`;
+            const sortOptionLabel = createElement('label', sortOptionsFormCheck, ['form-check-label'], sortOptionLabelText);
+            sortOptionLabel.for = `${key} ${sortOrder}`;
 
-    //add eventlistener + eventhandler function to selectForm so that it actually sorts results
-    selectForm.addEventListener('change', getSelectedValueAndSort);
-    
-    function getSelectedValueAndSort(){
-        let property = selectForm.value.split(' ')[0]; //split the value in two and store first as property and second as 
-        console.log(property);
-        let order = selectForm.value.split(' ')[1];
-        console.log(order);
+            //add eventlistener + eventhandler function to each radio buttin so that it actually sorts results
+            sortOptionInput.addEventListener('change', function(event){
+                getSelectedValueAndSort(event.target);
+            });
 
-    //clear previous results before sorting and displaying in new order
-    document.getElementById('resultsList').innerText = '';
-    document.getElementById('searchMessage').style.display = 'none';
 
-    //showResults(sortResults(dogs, property, order));
-    if (filteredDogs.length === 0){
-        createCards(sortResults(dogs, property, order), 'resultsList')      // sort all results if there are no filters
-    } else{
-        createCards(sortResults(filteredDogs, property, order), 'resultsList')  // only sort filtered results 
+        }
+        }
     }
 }
+
+function getSelectedValueAndSort(target){
+    let property = target.value.split(' ')[0]; //split the value in two and store first as property and second as order 
+    console.log(property);
+    let order = target.value.split(' ')[1];
+    console.log(order);
+
+//clear previous results before sorting and displaying in new order
+document.getElementById('resultsList').innerText = '';
+document.getElementById('searchMessage').style.display = 'none';
+
+//showResults(sortResults(dogs, property, order));
+if (filteredDogs.length === 0){
+    createCards(sortResults(dogs, property, order), 'resultsList')      // sort all results if there are no filters
+} else{
+    createCards(sortResults(filteredDogs, property, order), 'resultsList')  // only sort filtered results 
 }
+}
+
     
 //a function to sort an array by a specific property's values in increasing or decreasing order
 function sortResults(array, property, order){
@@ -468,13 +482,32 @@ function sortResults(array, property, order){
         return sortedDogs;
 } 
 
+function calcAverageWeight(dog){
+    return (dog.min_weight_female+dog.max_weight_female+dog.min_weight_male+dog.max_weight_male)/4
+}
+
+function calculateSize(dog){
+    let averageWeight = calcAverageWeight(dog);
+    if(averageWeight < 12) {
+        return 'miniature';
+    } else if(averageWeight < 25) {
+        return 'small';
+    } else if (averageWeight < 60) {
+        return 'medium';
+    } else if (averageWeight < 100) {
+        return 'large';
+    } else if (averageWeight >= 100) {
+        return 'giant';
+    }
+}
+
 
 //SORTING & FILTERING TEST
 //just sorting or just filtering work both fine
 //sorting then filtering works, even with multiple boxes checked (checking and unchecking makes dogs disappear and reappear like it should)
 //filtering then sorting works
 //sorting then filtering then sorting works
-//sorting then filtering then sorting then filtering AGAIN doesn't work => TYPE ERROR (cannot read properties of null reading style => lines 401/375) => FIX!!!
+//sorting then filtering then sorting then filtering AGAIN doesn't work => TYPE ERROR (cannot read properties of null reading style => lines 380/354) => FIX!!!
 
 //to do & ideas:
 
