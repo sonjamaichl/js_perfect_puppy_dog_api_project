@@ -1045,3 +1045,25 @@ let oldDogs =[
 /*for(dog of dogs) {
     console.log(dog["name"]);
 }*/
+
+//a function to create an object that contains all the chosen filtering options
+function createFilterObject(array) {
+    let chosenFilters = {};
+    const filterOptionProperties = ['size'];
+    //pushing all properties shown in the paw rating to the array of filterOptionProperties
+    for (const [key, value] of Object.entries(array[0])) {
+        if (typeof value === 'number'  && value >= 0 && value <= 5 && key !== 'coat_length'){
+            filterOptionProperties.push(key);
+        }
+    }
+    console.log('These are all the filtering options:')
+    console.log(filterOptionProperties);    //TEST
+    //making each value in the filterOptionProperties array a property of the chosenFilters Object
+    for (let i = 0; i < filterOptionProperties.length; i++){
+        chosenFilters[filterOptionProperties[i]] = [];   //default value is an empty array = no options chosen (should have same behavior as all options chosen!) 
+    }
+    //filterOptionProperties.forEach(chosenFilters => {chosenFilters.filterOption = filterOption});
+    console.log(chosenFilters);
+}
+
+createFilterObject(oldDogs);
