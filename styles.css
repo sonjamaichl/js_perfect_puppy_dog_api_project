@@ -107,3 +107,7 @@ li {
 .sort-option-li {
     padding-right: 1rem;
 }
+
+.sort-options {
+    margin: 1rem 0;
+}

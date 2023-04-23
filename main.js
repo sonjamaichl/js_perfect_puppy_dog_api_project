@@ -1,7 +1,7 @@
 //GLOBAL VARIABLES  ==> do they all need to be global? check and if not, put them somewhere else
 let offset = 0;
 let dogs = [];
-let filteredDogs = [];  //necessary???
+//let filteredDogs = [];  //necessary???
 let sortedDogs = [];    //necessary?
 let showAll = false;
 
@@ -108,7 +108,7 @@ async function getData(url) {
                 showSearchMessage(dogs);
                  //display a select form (dropdown) to choose sorting options for the search results (only if there's more than 1 result!)
                 if (dogs.length > 1){
-                    showSortingOptions(dogs);
+                    showSortingOptions(dogs, 'sortOptions', 'results', 'resultsList');
                     //showFilteringOptions(dogs);
                 }
                 //create a card with image and info for each dog
@@ -321,6 +321,25 @@ function createCards(dogs, parent){
     modalText.style.margin = '1rem';
 }
 
+function calcAverageWeight(dog){
+    return (dog.min_weight_female+dog.max_weight_female+dog.min_weight_male+dog.max_weight_male)/4
+}
+
+function calculateSize(dog){
+    let averageWeight = calcAverageWeight(dog);
+    if(averageWeight < 12) {
+        return 'miniature';
+    } else if(averageWeight < 25) {
+        return 'small';
+    } else if (averageWeight < 60) {
+        return 'medium';
+    } else if (averageWeight < 100) {
+        return 'large';
+    } else if (averageWeight >= 100) {
+        return 'giant';
+    }
+}
+
 //a function to format dog-objects' properties nicely (no underscores, first letter uppercase) to display in paw-rating
 function nicerText(string) {
     let newString = "";
@@ -336,6 +355,85 @@ function nicerText(string) {
 return newString;
 }               //could use .map() here for shorter code?
 
+
+//a function to show the sorting options when results are displayed
+function showSortingOptions(dogs, parent, buttonText, listName){      //parent added as parameter so it can be used for favorites page as well and appended to another div there
+    const sortOptions = document.getElementById(parent);
+    sortOptions.innerText = '';
+    const sortResultsButton = createElement('button', sortOptions, ['btn', 'btn-secondary', 'dropdown-toggle'], `Sort ${buttonText} by`);
+    sortResultsButton.type = 'button';
+    sortResultsButton.setAttribute('data-bs-toggle', 'dropdown');
+    sortResultsButton.setAttribute('aria-expanded', 'false');
+    //creating an ul for the sorting options
+    const sortOptionsList = createElement('ul', sortOptions, ['dropdown-menu'], 'none');
+    //creating a li element that contains a formcheck, input type radio and label for radio for each property to sort by
+    for (const [key] of Object.entries(dogs[0])) {
+        const noSortOptions = ['favorite','image_link', 'coat_length', 'wikiLink', 'min_height_female', 'max_height_female', 'min_height_male', 'min_weight_female', 'max_weight_female', 'min_weight_male', 'min_life_expectancy'];
+        if(noSortOptions.includes(key)){
+            continue
+        } else {
+            for (let i=0; i<2; i++){
+            let sortOrder = (i === 0)? 'increasing' : 'decreasing';
+            let orderText = (sortOrder === 'increasing')? 'lowest to highest' : 'highest to lowest';
+            const sortOptionsListElement = createElement('li', sortOptionsList, ['sort-option-li'], 'none')
+            const sortOptionsFormCheck = createElement('div', sortOptionsListElement, ['form-check'], 'none');
+            const sortOptionInput = createElement('input', sortOptionsFormCheck, ['form-check-input'], 'none');
+            sortOptionInput.type = 'radio';
+            sortOptionInput.name = 'sort-options';
+            sortOptionInput.value = `${key} ${sortOrder}`;
+            sortOptionInput.id = `${key} ${sortOrder}`;
+            let alphabeticalOrder = (i === 0)? 'Alphabet A-Z' : 'Alphabet Z-A';
+            let sortOptionLabelText = (key === 'name')? alphabeticalOrder : `${nicerText(key)}: ${orderText}`;
+            const sortOptionLabel = createElement('label', sortOptionsFormCheck, ['form-check-label'], sortOptionLabelText);
+            sortOptionLabel.for = `${key} ${sortOrder}`;
+
+            //add eventlistener + eventhandler function to each radio buttin so that it actually sorts results
+            sortOptionInput.addEventListener('change', function(event){
+                getSelectedValueAndSort(event.target, listName, dogs);
+            });
+
+
+        }
+        }
+    }
+}
+
+function getSelectedValueAndSort(target, listName, dogs){
+    let property = target.value.split(' ')[0]; //split the value in two and store first as property and second as order 
+    console.log(property);
+    let order = target.value.split(' ')[1];
+    console.log(order);
+
+//clear previous results before sorting and displaying in new order
+document.getElementById(listName).innerText = '';
+if (listName === 'resultsList'){
+document.getElementById('searchMessage').style.display = 'none';
+}
+
+//showResults(sortResults(dogs, property, order));
+//if (filteredDogs.length === 0){
+    createCards(sortResults(dogs, property, order), listName)      // sort all results if there are no filters 
+//}
+//else{
+    //createCards(sortResults(filteredDogs, property, order), listName)  // only sort filtered results => NO FILTERS ACTIVE RIGHT NOW
+//}
+}
+
+    
+//a function to sort an array by a specific property's values in increasing or decreasing order
+function sortResults(array, property, order){
+    sortedDogs = [];
+        if (order === 'increasing'){
+            sortedDogs = array.sort((a, b) => (a[property] > b[property])? 1 : -1);
+        } else if (order === 'decreasing'){
+            sortedDogs = array.sort((a, b) => (a[property] < b[property])? 1 : -1);
+        } else {
+            console.log ("sorry, couldn't sort array");
+        }
+        //console.log('This is my new array sorted by ' + property + ' in '+ order + ' order:')
+        //console.log(sortedDogs);
+        return sortedDogs;
+} 
 
 //a function to create an object that contains all the chosen filtering options
 function createFilterObject(array) {
@@ -362,100 +460,6 @@ function createFilterObject(array) {
 
 
 
-
-//a function to show the sorting options when results are displayed
-function showSortingOptions(dogs){
-    const sortOptions = document.getElementById('sortOptions');
-    sortOptions.innerText = '';
-    const sortResultsButton = createElement('button', sortOptions, ['btn', 'btn-secondary', 'dropdown-toggle'], 'Sort results by');
-    sortResultsButton.type = 'button';
-    sortResultsButton.setAttribute('data-bs-toggle', 'dropdown');
-    sortResultsButton.setAttribute('aria-expanded', 'false');
-    //creating an ul for the sorting options
-    const sortOptionsList = createElement('ul', sortOptions, ['dropdown-menu'], 'none');
-    //creating a li element that contains a formcheck, input type radio and label for radio for each property to sort by
-    for (const [key] of Object.entries(dogs[0])) {
-        const noSortOptions = ['favorite','image_link', 'coat_length', 'wikiLink', 'min_height_female', 'max_height_female', 'min_height_male', 'min_weight_female', 'max_weight_female', 'min_weight_male', 'min_life_expectancy'];
-        if(noSortOptions.includes(key)){
-            continue
-        } else {
-            for (let i=0; i<2; i++){
-            let sortOrder = (i === 0)? 'increasing' : 'decreasing';
-            let orderText = (sortOrder === 'increasing')? 'lowest to highest' : 'highest to lowest';
-            const sortOptionsListElement = createElement('li', sortOptionsList, ['sort-option-li'], 'none')
-            const sortOptionsFormCheck = createElement('div', sortOptionsListElement, ['form-check'], 'none');
-            const sortOptionInput = createElement('input', sortOptionsFormCheck, ['form-check-input'], 'none');
-            sortOptionInput.type = 'radio';
-            sortOptionInput.name = 'sort-options';
-            sortOptionInput.value = `${key} ${sortOrder}`;
-            sortOptionInput.id = `${key} ${sortOrder}`;
-            let sortOptionLabelText = (key === 'name')? 'Alphabet Z-A' : `${nicerText(key)}: ${orderText}`;
-            const sortOptionLabel = createElement('label', sortOptionsFormCheck, ['form-check-label'], sortOptionLabelText);
-            sortOptionLabel.for = `${key} ${sortOrder}`;
-
-            //add eventlistener + eventhandler function to each radio buttin so that it actually sorts results
-            sortOptionInput.addEventListener('change', function(event){
-                getSelectedValueAndSort(event.target);
-            });
-
-
-        }
-        }
-    }
-}
-
-function getSelectedValueAndSort(target){
-    let property = target.value.split(' ')[0]; //split the value in two and store first as property and second as order 
-    console.log(property);
-    let order = target.value.split(' ')[1];
-    console.log(order);
-
-//clear previous results before sorting and displaying in new order
-document.getElementById('resultsList').innerText = '';
-document.getElementById('searchMessage').style.display = 'none';
-
-//showResults(sortResults(dogs, property, order));
-if (filteredDogs.length === 0){
-    createCards(sortResults(dogs, property, order), 'resultsList')      // sort all results if there are no filters
-} else{
-    createCards(sortResults(filteredDogs, property, order), 'resultsList')  // only sort filtered results 
-}
-}
-
-    
-//a function to sort an array by a specific property's values in increasing or decreasing order
-function sortResults(array, property, order){
-    sortedDogs = [];
-        if (order === 'increasing'){
-            sortedDogs = array.sort((a, b) => (a[property] > b[property])? 1 : -1);
-        } else if (order === 'decreasing'){
-            sortedDogs = array.sort((a, b) => (a[property] < b[property])? 1 : -1);
-        } else {
-            console.log ("sorry, couldn't sort array");
-        }
-        //console.log('This is my new array sorted by ' + property + ' in '+ order + ' order:')
-        //console.log(sortedDogs);
-        return sortedDogs;
-} 
-
-function calcAverageWeight(dog){
-    return (dog.min_weight_female+dog.max_weight_female+dog.min_weight_male+dog.max_weight_male)/4
-}
-
-function calculateSize(dog){
-    let averageWeight = calcAverageWeight(dog);
-    if(averageWeight < 12) {
-        return 'miniature';
-    } else if(averageWeight < 25) {
-        return 'small';
-    } else if (averageWeight < 60) {
-        return 'medium';
-    } else if (averageWeight < 100) {
-        return 'large';
-    } else if (averageWeight >= 100) {
-        return 'giant';
-    }
-}
 
 
 //SORTING & FILTERING TEST
