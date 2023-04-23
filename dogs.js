@@ -1063,7 +1063,78 @@ function createFilterObject(array) {
         chosenFilters[filterOptionProperties[i]] = [];   //default value is an empty array = no options chosen (should have same behavior as all options chosen!) 
     }
     //filterOptionProperties.forEach(chosenFilters => {chosenFilters.filterOption = filterOption});
+    console.log('This is the filter object:');
     console.log(chosenFilters);
+    return chosenFilters;
 }
 
-createFilterObject(oldDogs);
+let perfectDog = changeFilters(createFilterObject(oldDogs));
+
+
+function changeFilters(object){     //just to test, this function will depend on user input later
+    object.energy = [4, 5];
+    object.trainability = [4, 5];
+    object.barking = [1, 2];
+    console.log('This is the new filter object')
+    console.log(object);
+    return object;
+}
+
+function filterResults(filterObject, arrayOfObjects){
+    
+    console.log('This is what your perfect dog should be like:');
+    console.log(filterObject);
+
+    //check which properties should be checked! (= all that contain values and are not empty)
+    let propertiesToCompare = [];
+    for (const [key, value] of Object.entries(filterObject)){
+        if (value.length > 0){
+            propertiesToCompare.push(key);
+        }
+    }
+    console.log(propertiesToCompare);
+
+    let filteredDogs = [];
+
+    for (let i = 0; i < arrayOfObjects.length; i++){    //for each dog
+        count = 0;  //counting how many properties match
+        for (const [key, value] of Object.entries(arrayOfObjects[i])){
+            if(propertiesToCompare.includes(key)){
+                if (filterObject[key].includes(value)){       
+            console.log(arrayOfObjects[i].name);
+            console.log(filterObject[key]);
+            console.log(key);
+            console.log(value);
+            count++;
+        }
+        }
+        }
+    if (count === propertiesToCompare.length){  //if all properties that were to check match, push this dog to filtered dogs array
+        filteredDogs.push(arrayOfObjects[i]);
+    }
+    }
+    console.log(filteredDogs);
+}
+
+
+filterResults(perfectDog, oldDogs);
+
+
+
+//changeFilters(createFilterObject(oldDogs));
+
+
+// function to filter the results according to chosen options => change function to use filterObject instead of property and values array!
+/*
+function filterResults(dogs, property, values){
+    filteredDogs = [];
+    for (let i = 0; i < dogs.length; i++){
+        for (value of values){              //could use values.forEach instead
+            if (dogs[i][property] === value)
+            filteredDogs.push(dogs[i]);
+        }
+    }
+    console.log('filtered dogs:')   //TEST
+    console.log(filteredDogs);    //TEST
+    return filteredDogs;
+}*/
