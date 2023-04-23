@@ -34,7 +34,6 @@ function activateEnterKey(){
     });
 }
 
-
 //function to get the input from search bar
 function getSearchInput() {
     return showAll? "1" : document.getElementById('searchInput').value;  //sets min_height to 1 (matches all dogs) if showAll is true
@@ -49,7 +48,7 @@ function getURL(func){
 
 //function to make spinner visible/invisible
 function displaySpinner(display){
-    document.getElementById('spinner').style.display = (display === 'display')? 'inline-block' : 'none';
+    document.getElementById('spinner').style.display = display;
 }
 
 function clearAll(){
@@ -62,17 +61,16 @@ function clearAll(){
     elementsToClear.forEach(element => document.getElementById(element).innerText = '');
 }
 
-
 //function to show the search results
 function showResults() {
-    displaySpinner('display');
+    displaySpinner('inline-block');
     clearAll();
     document.getElementById('searchMessage').style.display = 'none';
     dogs = [];  //empty old dogs list, if there was one...
     getData(getURL(getSearchInput));
 }
 
-//function to get data from API and create cards for the search results
+//function to get data from API and create cards for the search results 
 async function getData(url) {
     let response = await fetch(url, {
         method: "GET",
@@ -85,7 +83,7 @@ async function getData(url) {
         //console.log(dog.name);  //TEST
         //adding favorite property (to use later) and setting it to false
             newDog.favorite = false;
-        //getting wikipedia link for each dog from rapid api (before creating cards!)
+        //getting wikipedia link for each dog from rapid api (before creating cards!)       ==> USE PROMISE ALL FOR THE WIKILINKS TO MAKE CODE FASTER!!!
             const formattedDogName = newDog.name.split("").map(char => (char === ' ')? '_' : char).join("");
             let wikiQuery =  `https://en.wikipedia.org/w/api.php?action=query&prop=info&format=json&titles=${formattedDogName}`;
             let endpoint = 'https://corsproxy.io/?' + encodeURIComponent(wikiQuery);            //corsproxy.io is a free proxy server, it's necessary to prevent cors errors when sending a request to wikipedia api from a frontend application like in this case
@@ -111,12 +109,12 @@ async function getData(url) {
                  //display a select form (dropdown) to choose sorting options for the search results (only if there's more than 1 result!)
                 if (dogs.length > 1){
                     showSortingOptions(dogs);
-                    showFilteringOptions(dogs);
+                    //showFilteringOptions(dogs);
                 }
                 //create a card with image and info for each dog
                 createCards(dogs, 'resultsList'); //==> no loop needed here it's inside the function (could also be here, does it make a difference?)
                 //make spinner invisible
-                displaySpinner('hide');  
+                displaySpinner('none');  
             }
         }
     
@@ -323,7 +321,6 @@ function createCards(dogs, parent){
     modalText.style.margin = '1rem';
 }
 
-
 //a function to format dog-objects' properties nicely (no underscores, first letter uppercase) to display in paw-rating
 function nicerText(string) {
     let newString = "";
@@ -339,53 +336,6 @@ function nicerText(string) {
 return newString;
 }               //could use .map() here for shorter code?
 
-
-//a function to shoe the filtering options when results are displayed
-function showFilteringOptions(dogs){
-    const filterOptionsDiv = document.getElementById('filterOptions');
-    let filterObject = createFilterObject(dogs);
-
-    //const filterFormContainer = createElement('div', )
-    filterOptions.innerText = '';
-    //const filterOptionsContainer = createElement('div', filterOptions, ['alert', 'alert-light', 'container', 'd-flex-column'], 'none');
-    //const filterOptionsSizeForm = createElement('div', filterOptions, ['form-check'], 'none');
-    const filterOptionSizeText = createElement('p', filterOptions, 'none', 'Filter results by size:');
-    const dogSizes = ['miniature', 'small', 'medium', 'large', 'giant'];
-    let chosenSizes = [];
-    for (dogSize of dogSizes){
-        const filterSizeFormCheck = createElement('div', filterOptions, ['form-check', 'container'], 'none');
-        const sizeInputCheckbox = createElement('input', filterSizeFormCheck, ['form-check-input'], 'none');
-        sizeInputCheckbox.type = 'checkbox';
-        sizeInputCheckbox.name ='size';
-        sizeInputCheckbox.id = dogSize + 'size'
-        sizeInputCheckbox.value = dogSize;
-        const sizeInputLabel = createElement('label', filterSizeFormCheck, ['form-check-label'], dogSize);
-        sizeInputLabel.For = sizeInputCheckbox.id;
-        filterOptions.style.marginBottom = '1rem'; //CSS!
-        //adding eventlistener to each form + eventhandler to filter results according to options user has chosen
-        sizeInputCheckbox.addEventListener('change', function(event){
-            const value = event.target.value;
-            const property = event.target.name;
-            if (event.target.checked){ 
-                //add chosen value to an array of chosen values
-                chosenSizes.push(value);
-                console.log(chosenSizes);
-            } else {
-                //remove chosen value from the array of chosen values
-                chosenSizes = chosenSizes.filter(size => size !== value);
-                console.log(chosenSizes);
-            }
-            //filter array of search results (dogs) by the checkboxes value
-            console.log('You chose the following sizes: '); //TEST
-            console.log(chosenSizes)                        //TEST
-            filterResults(dogs, property, chosenSizes);   
-            displayOnlyFilteredDogs(dogs, filteredDogs, chosenSizes);
-        })
-    }
-}
-
-
-//should the searchMessage change when filtering (e.g. "5 results found for Retriever - large" instead of "6 results found for Retriever")???
 
 //a function to create an object that contains all the chosen filtering options
 function createFilterObject(array) {
@@ -404,34 +354,14 @@ function createFilterObject(array) {
         chosenFilters[filterOptions[i]] = [];   //default value is an empty array = no options chosen (should have same behavior as all options chosen!) 
     }
     //filterOptionProperties.forEach(chosenFilters => {chosenFilters.filterOption = filterOption});
-    console.log(chosenFilters);
-}
-
-// function to filter the results according to chosen options => change function to use filterObject instead of property and values array!
-function filterResults(dogs, property, values){
-    filteredDogs = [];
-    for (let i = 0; i < dogs.length; i++){
-        for (value of values){              //could use values.forEach instead
-            if (dogs[i][property] === value)
-            filteredDogs.push(dogs[i]);
-        }
-    }
-    console.log('filtered dogs:')   //TEST
-    console.log(filteredDogs);    //TEST
-    return filteredDogs;
+    console.log(chosenFilters);     //TEST
+    return chosenFilters;
 }
 
 
-// a function to display the results that match with the chosen filters and hide the rest
 
-function displayOnlyFilteredDogs(dogs, filteredDogs, chosenSizes){
-    if (chosenSizes.length === 0){
-        filteredDogs = dogs;    //if no checkboxes are checked, all search results will be displayed
-    }
-    for (dog of dogs){      // DISPLAY IF ON FILTERED DOGS ELSE HIDE
-        document.getElementById(dog.name).style.display = (filteredDogs.includes(dog))? 'inline-block' : 'none';
-    }
-    }
+
+
 
 //a function to show the sorting options when results are displayed
 function showSortingOptions(dogs){
