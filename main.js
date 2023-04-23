@@ -5,6 +5,36 @@ let filteredDogs = [];  //necessary???
 let sortedDogs = [];    //necessary?
 let showAll = false;
 
+//activate searchBar but only for home page (index.html)
+if (window.location.pathname === '/index.html'){
+    activateSearchBar();    
+}
+
+//adding event listeners to SEARCH & SHOW ALL button that triggers showResults() with different results depending on value of showAll(true/false)
+function activateSearchBar(){
+    const searchButton = document.getElementById('searchButton');
+    const showAllButton = document.getElementById('showAll');
+    const showResultsButtons = document.querySelectorAll(".showResults"); //returns an array of the two buttons
+    for (btn of showResultsButtons){
+    btn.addEventListener('click', function(event){
+        showAll = (event.target === showAllButton)? true : false;
+        showResults();
+    })
+    }
+    activateEnterKey();
+}
+
+//adding functionality to ENTER key (same as clicking searchButton)     ==> THIS PRODUCES AN ERROR FOR THE OTHER PAGES (FAVORITES & BREEDS_TEST.HTML, BUT SCRIPT IST STILL RUNNING)
+function activateEnterKey(){
+    document.getElementById('searchInput').addEventListener('keydown', function(event){
+        if (event.key === "Enter") {
+            event.preventDefault();
+            searchButton.click();  
+        }
+    });
+}
+
+
 //function to get the input from search bar
 function getSearchInput() {
     return showAll? "1" : document.getElementById('searchInput').value;  //sets min_height to 1 (matches all dogs) if showAll is true
@@ -17,32 +47,28 @@ function getURL(func){
     return basicURL + searchParameter + func().toLowerCase() + "&offset=" + offset;
 }
 
-//adding event listeners to SEARCH & SHOW ALL button that triggers showResults() with different results depending on value of showAll(true/false)
-const searchButton = document.getElementById('searchButton');
-const showAllButton = document.getElementById('showAll');
-const showResultsButtons = document.querySelectorAll(".showResults"); //returns an array of the two buttons
-for (btn of showResultsButtons){
-btn.addEventListener('click', function(event){
-    showAll = (event.target === showAllButton)? true : false;
-    showResults();
-})
+//function to make spinner visible/invisible
+function displaySpinner(display){
+    document.getElementById('spinner').style.display = (display === 'display')? 'inline-block' : 'none';
 }
 
-//adding functionality to ENTER key (same as clicking searchButton)     ==> THIS PRODUCES AN ERROR FOR THE OTHER PAGES (FAVORITES & BREEDS_TEST.HTML, BUT SCRIPT IST STILL RUNNING)
-document.getElementById('searchInput').addEventListener('keydown', function(event){
-    if (event.key === "Enter") {
-        event.preventDefault();
-        searchButton.click();  
+function clearAll(){
+    let elementsToClear = [];
+    if (window.location.pathname === '/index.html') {
+        elementsToClear = ['resultsList', 'sortOptions', 'filterOptions'];
+    } else if (window.location.pathname === '/favorites.html') {
+        elementsToClear = ['favoritesList'];        //+ sortOptions if these are added to the favoritesList as well!
     }
-});
+    elementsToClear.forEach(element => document.getElementById(element).innerText = '');
+}
+
 
 //function to show the search results
 function showResults() {
-    document.getElementById('spinner').style.display = 'inline-block';
-    const elementsToClear = ['resultsList', 'sortOptions', 'filterOptions'];
-    elementsToClear.forEach(element => document.getElementById(element).innerText = '');
+    displaySpinner('display');
+    clearAll();
     document.getElementById('searchMessage').style.display = 'none';
-    dogs = [];
+    dogs = [];  //empty old dogs list, if there was one...
     getData(getURL(getSearchInput));
 }
 
@@ -90,7 +116,7 @@ async function getData(url) {
                 //create a card with image and info for each dog
                 createCards(dogs, 'resultsList'); //==> no loop needed here it's inside the function (could also be here, does it make a difference?)
                 //make spinner invisible
-                document.getElementById('spinner').style.display = 'none';   
+                displaySpinner('hide');  
             }
         }
     
@@ -514,11 +540,9 @@ function calculateSize(dog){
 // 1) add a try/catch block to the async functions fetching data from the API!!!
 // 2) add a tooltip to let user know they will go to wikipedia if they click on the link in the description text
 // 2) add pagination (for more than 20 results)?
-// 3) add filters for character traits (+ sort functionality?)
+// 3) add filters for character traits
 // 4) add additional pictures from different api?!
 // 5) clean up code!!! would be nice to have some sort of structure here...
 // 6) add heart icon and like feature (use local storage to save the user's likes => red heart + display on favorites page?)
-// 7) create functionality for favorites page
-// 8) add filters for character traits (+ sort options?)
-// 9) add puppy logo and maybe background image or color
-// 10) add a fun easter egg (display random dog fact when clicking certain element or sth like that)
+// 7) add puppy logo and maybe background image or color
+// 8) add a fun easter egg (display random dog fact when clicking certain element or sth like that)
