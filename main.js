@@ -368,7 +368,7 @@ function showSortingOptions(dogs, parent, buttonText, listName){      //parent a
     const sortOptionsList = createElement('ul', sortOptions, ['dropdown-menu'], 'none');
     //creating a li element that contains a formcheck, input type radio and label for radio for each property to sort by
     for (const [key] of Object.entries(dogs[0])) {
-        const noSortOptions = ['favorite','image_link', 'coat_length', 'wikiLink', 'min_height_female', 'max_height_female', 'min_height_male', 'min_weight_female', 'max_weight_female', 'min_weight_male', 'min_life_expectancy'];
+        const noSortOptions = ['favorite','image_link', 'coat_length', 'wikiLink', 'min_height_female', 'max_height_female', 'min_height_male', 'min_weight_female', 'max_weight_female', 'min_weight_male', 'min_life_expectancy', 'matchesFilter'];
         if(noSortOptions.includes(key)){
             continue
         } else {
