@@ -1,8 +1,7 @@
 //GLOBAL VARIABLES  ==> do they all need to be global? check and if not, put them somewhere else
 let offset = 0;
 let dogs = [];
-//let filteredDogs = [];  //necessary???
-let sortedDogs = [];    //necessary?
+let sortedDogs = [];
 let showAll = false;
 
 //activate searchBar but only for home page (index.html)
@@ -24,7 +23,7 @@ function activateSearchBar(){
     activateEnterKey();
 }
 
-//adding functionality to ENTER key (same as clicking searchButton)     ==> THIS PRODUCES AN ERROR FOR THE OTHER PAGES (FAVORITES & BREEDS_TEST.HTML, BUT SCRIPT IST STILL RUNNING)
+//adding functionality to ENTER key (same as clicking searchButton)
 function activateEnterKey(){
     document.getElementById('searchInput').addEventListener('keydown', function(event){
         if (event.key === "Enter") {
@@ -52,12 +51,7 @@ function displaySpinner(display){
 }
 
 function clearAll(){
-    let elementsToClear = [];
-    if (window.location.pathname === '/index.html') {
-        elementsToClear = ['resultsList', 'sortOptions', 'filterOptions'];
-    } else if (window.location.pathname === '/favorites.html') {
-        elementsToClear = ['favoritesList'];        //+ sortOptions if these are added to the favoritesList as well!
-    }
+    let elementsToClear = ['resultsList', 'sortOptions', 'filterOptions'];
     elementsToClear.forEach(element => document.getElementById(element).innerText = '');
 }
 
@@ -83,6 +77,8 @@ async function getData(url) {
         //console.log(dog.name);  //TEST
         //adding favorite property (to use later) and setting it to false
             newDog.favorite = false;
+        //adding matchesFilter property to use later for filtering (true by default, can only be false after filters have been chosen)
+            newDog.matchesFilter = true;
         //getting wikipedia link for each dog from rapid api (before creating cards!)       ==> USE PROMISE ALL FOR THE WIKILINKS TO MAKE CODE FASTER!!!
             const formattedDogName = newDog.name.split("").map(char => (char === ' ')? '_' : char).join("");
             let wikiQuery =  `https://en.wikipedia.org/w/api.php?action=query&prop=info&format=json&titles=${formattedDogName}`;
@@ -109,7 +105,8 @@ async function getData(url) {
                  //display a select form (dropdown) to choose sorting options for the search results (only if there's more than 1 result!)
                 if (dogs.length > 1){
                     showSortingOptions(dogs, 'sortOptions', 'results', 'resultsList');
-                    //showFilteringOptions(dogs);
+                    let filterObject = createFilterObject(dogs);
+                    showFilteringOptions(filterObject, dogs);
                 }
                 //create a card with image and info for each dog
                 createCards(dogs, 'resultsList'); //==> no loop needed here it's inside the function (could also be here, does it make a difference?)
@@ -159,14 +156,15 @@ function showSearchMessage(dogs){
 
 //function to create and display one card for each dog in list of results (dogs)
 function createCards(dogs, parent){
+    document.getElementById(parent).innerText = '';
     //getting current version of favoriteDogs array from localStorage 
     let favoriteDogs = (typeof(localStorage.getItem('favoriteDogs'))=='undefined')? [] : JSON.parse(localStorage.getItem('favoriteDogs'));
-    console.log(favoriteDogs);  //TEST
+    //console.log(favoriteDogs);  //TEST
     //START LOOP
     let count = 0; //change to for-loop now that we actually need a counter???
     
     for (dog of dogs) {
-
+    
     //checking if dog is in favorites list and setting property accordingly
     dog.favorite = (favoriteDogs.length === 0)? false : (favoriteDogs.filter(e => e.name === dog.name).length > 0)? true : false;
     //console.log(dog.name, dog.favorite);  //TEST
@@ -174,7 +172,8 @@ function createCards(dogs, parent){
     //create one div with classes 'col d-flex align-items-stretch' and another one inside it with class card for every dog + append to resultsList
         const resultsList = document.getElementById(parent);
         const colDiv = createElement('div', resultsList, ['col'], 'none'); //adding classes 'd-flex' (and 'align-items-stretch'?) makes all cards the same height, but then they all open, when you only want to open one with "show more"
-        colDiv.id = dog.name;   //so we can access it later when filtering results to make cards disappear from resultsList
+        //colDiv.id = dog.name;   //so we can access it later when filtering results to make cards disappear from resultsList
+        colDiv.style.display = (dog.matchesFilter === true)? 'inline-block' : 'none'; //only display dogs that match the chosen filter
         const card = createElement('div', colDiv, ['card'], 'none');
     
     //put img of dog inside card and add card-img-top class + alt
@@ -231,8 +230,8 @@ function createCards(dogs, parent){
             }
             }
             dogs[heartIcon.id].favorite = (dogs[heartIcon.id].favorite)? false : true;
-            console.log('These are your current favorites: ')//TEST
-            console.log(favoriteDogs); //TEST
+            //console.log('These are your current favorites: ')//TEST
+            //console.log(favoriteDogs); //TEST
             
         });
 
@@ -360,6 +359,7 @@ return newString;
 function showSortingOptions(dogs, parent, buttonText, listName){      //parent added as parameter so it can be used for favorites page as well and appended to another div there
     const sortOptions = document.getElementById(parent);
     sortOptions.innerText = '';
+    //creating a button with a dropdown to show the sorting options
     const sortResultsButton = createElement('button', sortOptions, ['btn', 'btn-secondary', 'dropdown-toggle'], `Sort ${buttonText} by`);
     sortResultsButton.type = 'button';
     sortResultsButton.setAttribute('data-bs-toggle', 'dropdown');
@@ -411,12 +411,7 @@ document.getElementById('searchMessage').style.display = 'none';
 }
 
 //showResults(sortResults(dogs, property, order));
-//if (filteredDogs.length === 0){
-    createCards(sortResults(dogs, property, order), listName)      // sort all results if there are no filters 
-//}
-//else{
-    //createCards(sortResults(filteredDogs, property, order), listName)  // only sort filtered results => NO FILTERS ACTIVE RIGHT NOW
-//}
+createCards(sortResults(dogs, property, order), listName)  // only sort filtered results => NO FILTERS ACTIVE RIGHT NOW
 }
 
     
@@ -438,45 +433,129 @@ function sortResults(array, property, order){
 //a function to create an object that contains all the chosen filtering options
 function createFilterObject(array) {
     let chosenFilters = {};
-    const filterOptions = ['size'];
+    const filterOptionProperties = ['size'];
     //pushing all properties shown in the paw rating to the array of filterOptionProperties
     for (const [key, value] of Object.entries(array[0])) {
         if (typeof value === 'number'  && value >= 0 && value <= 5 && key !== 'coat_length'){
-            filterOptions.push(key);
+            filterOptionProperties.push(key);
         }
     }
     console.log('These are all the filtering options:')
-    console.log(filterOptions);    //TEST
+    console.log(filterOptionProperties);    //TEST
     //making each value in the filterOptionProperties array a property of the chosenFilters Object
-    for (let i = 0; i < filterOptions.length; i++){
-        chosenFilters[filterOptions[i]] = [];   //default value is an empty array = no options chosen (should have same behavior as all options chosen!) 
+    for (let i = 0; i < filterOptionProperties.length; i++){
+        chosenFilters[filterOptionProperties[i]] = [];   //default value is an empty array = no options chosen (should have same behavior as all options chosen!) 
     }
     //filterOptionProperties.forEach(chosenFilters => {chosenFilters.filterOption = filterOption});
-    console.log(chosenFilters);     //TEST
+    console.log('This is the filter object:');
+    console.log(chosenFilters);
     return chosenFilters;
+}
+
+function showFilteringOptions(filterObject, dogs) {
+    const filterOptions = document.getElementById('filterOptions');
+    filterOptions.innerText = '';
+    //creating a button with a dropdown to show the filtering options
+    const filterResultsButton = createElement('button', filterOptions, ['btn', 'btn-secondary', 'dropdown-toggle'], `Filter results by`);
+    filterResultsButton.type = 'button';
+    filterResultsButton.setAttribute('data-bs-toggle', 'dropdown');
+    filterResultsButton.setAttribute('aria-expanded', 'false');
+    //creating an ul for the sorting options
+    const filterOptionsList = createElement('ul', filterOptions, ['dropdown-menu'], 'none');
+    //creating a list of items (?) with input (checkboxes) for each property to sort???
+    for (const [key] of Object.entries(filterObject)) { //for each filter property
+        const filterOptionsListElement = createElement ('li', filterOptionsList, ['sort-option-li'], `${nicerText(key)}`);
+        const filterOptionsCheckContainer = createElement ('div', filterOptionsListElement, ['container', 'd-flex'], 'none');
+        for (let i = 1; i <= 5; i++) { //creating 5 checkboxes & labels for each property
+        const filterOptionsFormCheck = createElement ('div', filterOptionsCheckContainer, ['form-check'], 'none');
+        const filterOptionsCheckbox = createElement ('input', filterOptionsFormCheck, ['form-check-input'], 'none');
+        filterOptionsCheckbox.type = 'checkbox';
+        const sizes = ['miniature', 'small', 'medium', 'large', 'giant'];
+        const labelText = (key === 'size')? sizes[i-1] : i;
+        filterOptionsCheckbox.value = labelText;
+        filterOptionsCheckbox.name = key;
+        filterOptionsCheckbox.id = `${key} ${i}`;
+        const filterOptionsLabel = createElement('label', filterOptionsFormCheck, ['form-check-label', 'filter-options-label'], labelText);
+        filterOptionsLabel.for = filterOptionsCheckbox.id;
+        //adding eventListener + eventHandlder to each checkbox
+        filterOptionsCheckbox.addEventListener('change', function(event){
+            //get property & value from checkbox
+            const value = event.target.value;
+            const property = event.target.name;
+            console.log(property, value);
+            //change filter object according to it
+            if (event.target.checked){
+            filterObject[property].push(value)
+            } else {
+                filterObject[property] = filterObject[property].filter(e => e !== value);
+            }
+            console.log(filterObject);  
+            //document.getElementById('resultsList')
+            createCards(filterResults(filterObject, dogs), 'resultsList');
+        })
+    }
+    }
+}
+
+function filterResults(filterObject, dogs){
+    
+    console.log('This is what your perfect dog should be like:');
+    console.log(filterObject);
+
+    //check which properties should be checked! (= all that contain values and are not empty)
+    let propertiesToCompare = [];
+    for (const [key, value] of Object.entries(filterObject)){
+        if (value.length > 0){
+            propertiesToCompare.push(key);
+        }
+    }
+    console.log('These properties have to be compared:')
+    console.log(propertiesToCompare);
+
+    for (let i = 0; i < dogs.length; i++){    //for each dog
+        dog.matchesFilter = false;
+        count = 0;  //counting how many properties match
+        
+        for (const [key, value] of Object.entries(dogs[i])){
+            if(propertiesToCompare.includes(key)){
+                if (filterObject[key].includes(value.toString())){       
+            console.log(dogs[i].name);
+            //console.log(filterObject[key]);
+            //console.log(key);
+            //console.log(value);
+            count++;
+        } else {
+            //console.log(dogs[i].name);
+            //console.log(filterObject[key]);
+            //console.log(key);
+            //console.log(value);
+            console.log(dogs[i].name + key + value + ' => no match => compare next dog')
+            dogs[i].matchesFilter = false;
+            console.log(dogs[i]);
+            break;  //jumps out of the inner loop for this dog => goes to next iteration of outer loop (next dog)
+        }
+        }
+    }
+    if (count === propertiesToCompare.length){  //if all properties that were to check match, push this dog to filtered dogs array
+        dogs[i].matchesFilter = true;
+        console.log(dogs[i]);
+    }
+}
+console.log(dogs);
+return dogs;
 }
 
 
 
 
-
-
-
-//SORTING & FILTERING TEST
-//just sorting or just filtering work both fine
-//sorting then filtering works, even with multiple boxes checked (checking and unchecking makes dogs disappear and reappear like it should)
-//filtering then sorting works
-//sorting then filtering then sorting works
-//sorting then filtering then sorting then filtering AGAIN doesn't work => TYPE ERROR (cannot read properties of null reading style => lines 380/354) => FIX!!!
-
 //to do & ideas:
 
 // 1) add a try/catch block to the async functions fetching data from the API!!!
-// 2) add a tooltip to let user know they will go to wikipedia if they click on the link in the description text
-// 2) add pagination (for more than 20 results)?
-// 3) add filters for character traits
-// 4) add additional pictures from different api?!
-// 5) clean up code!!! would be nice to have some sort of structure here...
-// 6) add heart icon and like feature (use local storage to save the user's likes => red heart + display on favorites page?)
-// 7) add puppy logo and maybe background image or color
-// 8) add a fun easter egg (display random dog fact when clicking certain element or sth like that)
+// 2) add promise all for wikiLinks fetch!
+// 3) add a message to let user know when no more results are displayed because no dogs match the chosen filters
+// 4) add a tooltip to let user know they will go to wikipedia if they click on the link in the description text
+// 5) add pagination (for more than 20 results)?
+// 6) add additional pictures from different api?!
+// 7) clean up code!!! would be nice to have some sort of structure here...
+// 8) add puppy logo and maybe background image or color
+// 9) add a fun easter egg (display random dog fact when clicking certain element or sth like that)

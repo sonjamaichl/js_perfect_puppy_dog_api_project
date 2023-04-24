@@ -64,51 +64,22 @@
     <!--SHOW MESSAGE IF & HOW MANY RESULTS WERE FOUND HERE-->
     <div id="searchMessage"></div>
 
-    <!--SHOW DROPDOWN SELECT TO SORT RESULTS HERE-->
-    <div id="sortOptions" class="dropdown sort-options">
-        <!--NEW SORT OPTIONS TEST
-
-      <button class="btn btn-secondary dropdown-toggle" type="button" data-bs-toggle="dropdown" aria-expanded="false">
-        Sort results by
-      </button>
-      <ul class="dropdown-menu">
-        <li>
-          <div class="form-check">
-          <input class="form-check-input" type="radio" name="flexRadioDefault" id="flexRadioDefault1">
-          <label class="form-check-label" for="flexRadioDefault1">
-            Default radio
-          </label>
-          </div>
-        </li>
-        <li>
-          <div class="form-check">
-            <input class="form-check-input" type="radio" name="flexRadioDefault" id="flexRadioDefault1">
-            <label class="form-check-label" for="flexRadioDefault1">
-              Default radio
-            </label>
-            </div>
-        </li>
-        <li>
-          <div class="form-check">
-            <input class="form-check-input" type="radio" name="flexRadioDefault" id="flexRadioDefault1">
-            <label class="form-check-label" for="flexRadioDefault1">
-              Default radio
-            </label>
-            </div>
-        </li>
-      </ul>
-      -->
-  
-    </div>
+    <!--CONTAINER FOR SORt & FILTER-->
+    <div id="sortAndFilter" class="row g-3 row-cols-1 row-cols-sm-2 row-cols-md-3 row-cols-lg-4"> <!--using same grid as search results cards-->
+    
+    <!--SHOW SORTING OPTIONS HERE-->
+    <div id="sortOptions" class="dropdown sort-options"></div>
 
     <!--SHOW FILTERING OPTIONS HERE-->
-    <div id="filterOptions"></div>
+    <div id="filterOptions" class="dropdown sort-options"></div>
+  </div>
     
     <!--SHOW RESULT CARDS HERE-->
     <div id="resultsList" class="row g-3 row-cols-1 row-cols-sm-2 row-cols-md-3 row-cols-lg-4">
       <!-- responsive hybrid grid: smartphone => 1 col, small display => 2, medium => 3 large or more => 4
             g-3 adds gutter space between rows (values 1-5 possible)-->
     </div>
+
     </div>
   </main>
 </body>

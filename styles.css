@@ -108,6 +108,20 @@ li {
     padding-right: 1rem;
 }
 
-.sort-options {
+.options-list {
+    display: inline-flex;
     margin: 1rem 0;
+    padding-right: 2rem;
+}
+
+#sortAndFilter {
+    padding: 1rem 0px 1rem 0px;
+}
+
+#filterOptions, #sortOptions {
+    width: 1col;
+}
+
+.filter-options-label {
+    margin-right: 1rem;
 }

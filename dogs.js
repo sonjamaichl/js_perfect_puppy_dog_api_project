@@ -1074,7 +1074,8 @@ let perfectDog = changeFilters(createFilterObject(oldDogs));
 function changeFilters(object){     //just to test, this function will depend on user input later
     object.energy = [4, 5];
     object.trainability = [4, 5];
-    object.barking = [1, 2];
+    object.good_with_children = [4, 5];
+    //object.barking = [1, 2];
     console.log('This is the new filter object')
     console.log(object);
     return object;
@@ -1098,7 +1099,7 @@ function filterResults(filterObject, arrayOfObjects){
     let filteredDogs = [];  //or: give dog a property 'matchesFilters' or sth and then set to true or false?
 
     for (let i = 0; i < arrayOfObjects.length; i++){    //for each dog
-        arrayOfObjects[i].matchesFilter = false;
+        //arrayOfObjects[i].matchesFilter = false;
         count = 0;  //counting how many properties match
         
         for (const [key, value] of Object.entries(arrayOfObjects[i])){
