@@ -1092,12 +1092,15 @@ function filterResults(filterObject, arrayOfObjects){
             propertiesToCompare.push(key);
         }
     }
+    console.log('These properties have to be compared:')
     console.log(propertiesToCompare);
 
-    let filteredDogs = [];
+    let filteredDogs = [];  //or: give dog a property 'matchesFilters' or sth and then set to true or false?
 
     for (let i = 0; i < arrayOfObjects.length; i++){    //for each dog
+        arrayOfObjects[i].matchesFilter = false;
         count = 0;  //counting how many properties match
+        
         for (const [key, value] of Object.entries(arrayOfObjects[i])){
             if(propertiesToCompare.includes(key)){
                 if (filterObject[key].includes(value)){       
@@ -1106,14 +1109,20 @@ function filterResults(filterObject, arrayOfObjects){
             console.log(key);
             console.log(value);
             count++;
+        } else {
+            console.log(arrayOfObjects[i].name + ' => no match => compare next dog')
+            break;  //jumps out of the inner loop for this dog => goes to next iteration of outer loop (next dog)
         }
         }
-        }
+    }
     if (count === propertiesToCompare.length){  //if all properties that were to check match, push this dog to filtered dogs array
         filteredDogs.push(arrayOfObjects[i]);
+        
+    //}   
     }
-    }
-    console.log(filteredDogs);
+}
+console.log(filteredDogs);
+    
 }
 
 
