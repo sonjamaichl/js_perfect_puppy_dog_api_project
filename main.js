@@ -43,7 +43,7 @@ function getURL(func){
     let basicURL = "https://api.api-ninjas.com/v1/dogs?";
     let searchParameter = showAll? "min_height=" : "name=";
     let newURL = basicURL + searchParameter + func().toLowerCase() + "&offset=" + offset;
-    console.log(newURL);
+    console.log(newURL);    //TEST
     return newURL
 }
 
@@ -67,42 +67,67 @@ function showResults() {
     getData(getURL(getSearchInput));
 }
 
+//a function to format the dog's names so they can be used for the request to wikipedia API
+function formatDogNameForWiki(newDog){
+    return newDog.name.split("").map(char => (char === ' ')? '_' : char).join("");
+}
+
 //function to get data from API and create cards for the search results 
 async function getData(url) {
-    try{
+    console.log('start fetching now...');
+    //try{
     let response = await fetch(url, {
         method: "GET",
         headers: {
-          "X-API-Key": "qwIGzCw6xnboQDmPHxp2wQ==7CP90HowwDVCSr2d",
+          "X-API-Key": api_key,
         }
      });
+     //console.log(response);   //TEST
      let newDogs = await response.json();
+     //console.log(newDogs);    //TEST
+     let wikiEndpoints = [];
         for (newDog of newDogs) {
-        //console.log(dog.name);  //TEST
+        //console.log(newDog.name);  //TEST
         //adding favorite property (to use later) and setting it to false
             newDog.favorite = false;
         //adding matchesFilter property to use later for filtering (true by default, can only be false after filters have been chosen)
             newDog.matchesFilter = true;
+        //adding wikiLink property but leaving it empty for now
+            newDog.wikiLink = '';
         //getting wikipedia link for each dog from wikipedia api (before creating cards!)       ==> USE PROMISE ALL FOR THE WIKILINKS TO MAKE CODE FASTER!!!
-            const formattedDogName = newDog.name.split("").map(char => (char === ' ')? '_' : char).map(char => (char === "'")? '%27' : char).join("");
-            let wikiQuery =  `https://en.wikipedia.org/w/api.php?action=query&prop=info&format=json&titles=${formattedDogName}`;
+            let wikiQuery =  `https://en.wikipedia.org/w/api.php?action=query&prop=info&format=json&titles=${formatDogNameForWiki(newDog)}`;
             let endpoint = 'https://corsproxy.io/?' + encodeURIComponent(wikiQuery);            //corsproxy.io is a free proxy server, it's necessary to prevent cors errors when sending a request to wikipedia api from a frontend application like in this case
-            //console.log(endpoint);   //TEST
-            try{
-            let response = await fetch(endpoint);
-                    //console.log(response);
-            let result = await response.json();
-                    //console.log(result);    //TEST
-            newDog.wikiLink = ('-1' in result.query.pages)? '' : `https://en.wikipedia.org/wiki/${formattedDogName}`;  //adding wikiLink property to each dog object to use later in createCards()-loop
-            console.log(newDog.name + ": " + newDog.wikiLink); //TEST  
-            }
-            catch(error){
-                console.log(`error: couldn't fetch wikiLink for ${newDog.name}`)
-                newDog.wikiLink = '';
-                console.log(newDog.name + ": " + newDog.wikiLink); //TEST
-            }
+            console.log(endpoint);   //TEST
+            wikiEndpoints.push(endpoint);
             dogs.push(newDog);
         }
+        //create an array of promises here instead of actually fetching in each iteration of the loop here!!!
+        //try{
+        let wikiPromises = wikiEndpoints.map(async (endpoint) => {
+            let result = '';
+            try{
+            const response = await fetch(endpoint);
+            //console.log(response);
+            if(!response.ok){
+                throw new Error (error);
+            }
+            result = await response.json();
+            return result;
+            } catch(error){
+            console.log("wikipedia doesn't like our request for this dog");
+            return result;
+        }
+        })
+       // } catch(error){
+        //console.log("oopsies, wikiLink fetching wasn't successfull");
+        //}
+        console.log('This is one fancy array of wikiPromises:') //TEST
+        console.log(wikiPromises);         //TEST!!!
+        const wikiResponses = await Promise.all(wikiPromises);
+        console.log(wikiResponses);
+
+        newDogs.map((newDog, i) => newDog.wikiLink = (wikiResponses[i] === '' || '-1' in wikiResponses[i].query.pages)? '' : `https://en.wikipedia.org/wiki/${formatDogNameForWiki(newDog)}`);  //adding wikiLink property to each dog object to use later in createCards()-loop
+
         if (newDogs.length === 20) {
                 //console.log('more than 20 results found, fetching again')
                 offset +=20;
@@ -123,13 +148,13 @@ async function getData(url) {
                 //make spinner invisible
                 displaySpinner('none');  
             }
-        }
+       /* }   //END OF GET DATA TRY-BLOCK
         catch(error){
             console.log("error: couldn't fetch data from ninja dogs api");
             displaySpinner('none');
             showSearchMessage(dogs, error);
-        }
-        }
+        }*/
+        }   //END OF GET DATA FUNCTION
     
 //a function to create new elements in the DOM
 function createElement(htmlTag, parentEl, classesOfEl, innerTextOfEl, source, altText){
