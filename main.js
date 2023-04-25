@@ -99,6 +99,8 @@ function clearAll(){
 
 //function to show the search results
 function showResults() {
+    console.log('starting timer now');
+    console.time()
     displaySpinner('inline-block');
     clearAll();
     document.getElementById('searchMessage').style.display = 'none';
@@ -113,17 +115,11 @@ function formatDogNameForWiki(newDog){
     return newDog.name.split("").map(char => (char === ' ')? '_' : char).join("");
 }
 
-//function to get wikilinks after getting data from ninja APIS
-async function getDogsAndWikiLinks(){
-    dogs = await getData(getURL(getSearchInput));
-    dogs = await getWikiLinks(dogs);
-}
-
 
 //function to get data from API and create cards for the search results 
 async function getData(url) {
     console.log('start fetching now...');
-    //try{
+    try{
     let response = await fetch(url, {
         method: "GET",
         headers: {
@@ -142,40 +138,10 @@ async function getData(url) {
             newDog.matchesFilter = true;
         //adding wikiLink property but leaving it empty for now
             newDog.wikiLink = '';
-        //getting wikipedia link for each dog from wikipedia api (before creating cards!)       ==> USE PROMISE ALL FOR THE WIKILINKS TO MAKE CODE FASTER!!!
-            //let wikiQuery =  `https://en.wikipedia.org/w/api.php?action=query&prop=info&format=json&titles=${formatDogNameForWiki(newDog)}`;
-            //let endpoint = 'https://corsproxy.io/?' + encodeURIComponent(wikiQuery);            //corsproxy.io is a free proxy server, it's necessary to prevent cors errors when sending a request to wikipedia api from a frontend application like in this case
-            //console.log(endpoint);   //TEST
-            //wikiEndpoints.push(endpoint);
+        
             dogs.push(newDog);
         }
-        //create an array of promises here instead of actually fetching in each iteration of the loop here!!!
-        //try{
-        /*let wikiPromises = wikiEndpoints.map(async (endpoint) => {
-            let result = '';
-            try{
-            const response = await fetch(endpoint);
-            //console.log(response);
-            if(!response.ok){
-                throw new Error (error);
-            }
-            result = await response.json();
-            return result;
-            } catch(error){
-            console.log("wikipedia doesn't like our request for this dog");
-            return result;
-        }
-        })*/
-       // } catch(error){
-        //console.log("oopsies, wikiLink fetching wasn't successfull");
-        //}
-        //console.log('This is one fancy array of wikiPromises:') //TEST
-        //console.log(wikiPromises);         //TEST!!!
-        // const wikiResponses = await Promise.all(wikiPromises);
-        //console.log(wikiResponses);
-
-       // newDogs.map((newDog, i) => newDog.wikiLink = (wikiResponses[i] === '' || '-1' in wikiResponses[i].query.pages)? '' : `https://en.wikipedia.org/wiki/${formatDogNameForWiki(newDog)}`);  //adding wikiLink property to each dog object to use later in createCards()-loop
-
+        
         if (newDogs.length === 20) {
                 //console.log('more than 20 results found, fetching again')
                 offset +=20;
@@ -196,14 +162,16 @@ async function getData(url) {
                 //make spinner invisible
                 displaySpinner('none');  
                 getWikiLinks(dogs);
+                console.log('this is how long it takes to get all breeds using a recursive function');
+                console.timeEnd();
                 return dogs;
             }
-       /* }   //END OF GET DATA TRY-BLOCK
+       }   //END OF GET DATA TRY-BLOCK
         catch(error){
             console.log("error: couldn't fetch data from ninja dogs api");
             displaySpinner('none');
             showSearchMessage(dogs, error);
-        }*/
+        }
         }   //END OF GET DATA FUNCTION
     
 //a function to create new elements in the DOM
