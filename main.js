@@ -23,6 +23,46 @@ function activateSearchBar(){
     activateEnterKey();
 }
 
+//function to get the wikiLinks from wikipedia API for all dogs
+async function getWikiLinks(dogs){
+    console.log('wikilink function now running');
+    let wikiEndpoints = [];
+    for (let i = 0; i < dogs.length; i++){
+    let wikiQuery =  `https://en.wikipedia.org/w/api.php?action=query&prop=info&format=json&titles=${formatDogNameForWiki(dogs[i])}`;
+    let endpoint = 'https://corsproxy.io/?' + encodeURIComponent(wikiQuery);            //corsproxy.io is a free proxy server, it's necessary to prevent cors errors when sending a request to wikipedia api from a frontend application like in this case
+    console.log(endpoint);
+    wikiEndpoints.push(endpoint);
+    }
+    console.log(wikiEndpoints);
+    let wikiPromises = wikiEndpoints.map(async (endpoint) => {
+        let result = '';
+        try{
+        const response = await fetch(endpoint);
+        //console.log(response);
+        if(!response.ok){
+            throw new Error (error);
+        }
+        result = await response.json();
+        return result;
+        } catch(error){
+        console.log("wikipedia doesn't like our request for this dog");
+        return result;
+        }
+     })   
+    const wikiResponses = await Promise.all(wikiPromises);
+    console.log(wikiResponses);
+
+    dogs.map((dog, i) => dog.wikiLink = (wikiResponses[i] === '' || '-1' in wikiResponses[i].query.pages)? '' : `https://en.wikipedia.org/wiki/${formatDogNameForWiki(dog)}`);  //adding wikiLink property to each dog object to use later in createCards()-loop
+
+    for(dog of dogs){
+        dog.size = calculateSize(dog); 
+        let dogDescription = document.getElementById(`${dog.name} - description`);
+        let textSnippet = (dog.min_life_expectancy === dog.max_life_expectancy)? `is a ${dog.size} dog with a life expectancy of about ${dog.min_life_expectancy} years.` : `is a ${dog.size} dog with a life expectancy of ${dog.min_life_expectancy} - ${dog.max_life_expectancy} years.`;
+        dogDescription.innerHTML = (dog.wikiLink === '')? `The ${dog.name} ${textSnippet}` : `<span>The <a class="link-primary link-offset-2 link-underline-opacity-25 link-underline-opacity-100-hover" target="_blank" href="${dog.wikiLink}">${dog.name}</a> ${textSnippet}</span>`;
+    }
+    return dogs;
+}
+
 //adding functionality to ENTER key (same as clicking searchButton)
 function activateEnterKey(){
     document.getElementById('searchInput').addEventListener('keydown', function(event){
@@ -64,6 +104,7 @@ function showResults() {
     document.getElementById('searchMessage').style.display = 'none';
     document.getElementById('filterMessage').style.display = 'none';
     dogs = [];  //empty old dogs list, if there was one...
+    offset = 0;
     getData(getURL(getSearchInput));
 }
 
@@ -71,6 +112,13 @@ function showResults() {
 function formatDogNameForWiki(newDog){
     return newDog.name.split("").map(char => (char === ' ')? '_' : char).join("");
 }
+
+//function to get wikilinks after getting data from ninja APIS
+async function getDogsAndWikiLinks(){
+    dogs = await getData(getURL(getSearchInput));
+    dogs = await getWikiLinks(dogs);
+}
+
 
 //function to get data from API and create cards for the search results 
 async function getData(url) {
@@ -85,7 +133,7 @@ async function getData(url) {
      //console.log(response);   //TEST
      let newDogs = await response.json();
      //console.log(newDogs);    //TEST
-     let wikiEndpoints = [];
+     //let wikiEndpoints = [];
         for (newDog of newDogs) {
         //console.log(newDog.name);  //TEST
         //adding favorite property (to use later) and setting it to false
@@ -95,15 +143,15 @@ async function getData(url) {
         //adding wikiLink property but leaving it empty for now
             newDog.wikiLink = '';
         //getting wikipedia link for each dog from wikipedia api (before creating cards!)       ==> USE PROMISE ALL FOR THE WIKILINKS TO MAKE CODE FASTER!!!
-            let wikiQuery =  `https://en.wikipedia.org/w/api.php?action=query&prop=info&format=json&titles=${formatDogNameForWiki(newDog)}`;
-            let endpoint = 'https://corsproxy.io/?' + encodeURIComponent(wikiQuery);            //corsproxy.io is a free proxy server, it's necessary to prevent cors errors when sending a request to wikipedia api from a frontend application like in this case
-            console.log(endpoint);   //TEST
-            wikiEndpoints.push(endpoint);
+            //let wikiQuery =  `https://en.wikipedia.org/w/api.php?action=query&prop=info&format=json&titles=${formatDogNameForWiki(newDog)}`;
+            //let endpoint = 'https://corsproxy.io/?' + encodeURIComponent(wikiQuery);            //corsproxy.io is a free proxy server, it's necessary to prevent cors errors when sending a request to wikipedia api from a frontend application like in this case
+            //console.log(endpoint);   //TEST
+            //wikiEndpoints.push(endpoint);
             dogs.push(newDog);
         }
         //create an array of promises here instead of actually fetching in each iteration of the loop here!!!
         //try{
-        let wikiPromises = wikiEndpoints.map(async (endpoint) => {
+        /*let wikiPromises = wikiEndpoints.map(async (endpoint) => {
             let result = '';
             try{
             const response = await fetch(endpoint);
@@ -117,16 +165,16 @@ async function getData(url) {
             console.log("wikipedia doesn't like our request for this dog");
             return result;
         }
-        })
+        })*/
        // } catch(error){
         //console.log("oopsies, wikiLink fetching wasn't successfull");
         //}
-        console.log('This is one fancy array of wikiPromises:') //TEST
-        console.log(wikiPromises);         //TEST!!!
-        const wikiResponses = await Promise.all(wikiPromises);
-        console.log(wikiResponses);
+        //console.log('This is one fancy array of wikiPromises:') //TEST
+        //console.log(wikiPromises);         //TEST!!!
+        // const wikiResponses = await Promise.all(wikiPromises);
+        //console.log(wikiResponses);
 
-        newDogs.map((newDog, i) => newDog.wikiLink = (wikiResponses[i] === '' || '-1' in wikiResponses[i].query.pages)? '' : `https://en.wikipedia.org/wiki/${formatDogNameForWiki(newDog)}`);  //adding wikiLink property to each dog object to use later in createCards()-loop
+       // newDogs.map((newDog, i) => newDog.wikiLink = (wikiResponses[i] === '' || '-1' in wikiResponses[i].query.pages)? '' : `https://en.wikipedia.org/wiki/${formatDogNameForWiki(newDog)}`);  //adding wikiLink property to each dog object to use later in createCards()-loop
 
         if (newDogs.length === 20) {
                 //console.log('more than 20 results found, fetching again')
@@ -147,6 +195,8 @@ async function getData(url) {
                 createCards(dogs, 'resultsList'); //==> no loop needed here it's inside the function (could also be here, does it make a difference?)
                 //make spinner invisible
                 displaySpinner('none');  
+                getWikiLinks(dogs);
+                return dogs;
             }
        /* }   //END OF GET DATA TRY-BLOCK
         catch(error){
@@ -300,9 +350,10 @@ function createCards(dogs, parent){
 
     //put p with some text inside cardBody (since there is no description text in api data, let's put sth together using the data they give us...)
         let cardDescription = document.createElement('p');
+        cardDescription.id =`${dog.name} - description`;
         
         //calculate average weight of dog and use this value to decide which size the dog is
-        dog.size = calculateSize(dog);   
+        //dog.size = calculateSize(dog);      //do that right after fetching in getData() 
         
         //put description text together and append to cardText
         let textSnippet = (dog.min_life_expectancy === dog.max_life_expectancy)? `is a ${dog.size} dog with a life expectancy of about ${dog.min_life_expectancy} years.` : `is a ${dog.size} dog with a life expectancy of ${dog.min_life_expectancy} - ${dog.max_life_expectancy} years.`;
@@ -615,13 +666,11 @@ return dogs;
 
 //to do & ideas:
 
-// 1) add promise all for wikiLinks fetch!
-// 2) add a message to let user know when no more results are displayed because no dogs match the chosen filters => counter?
-// 3) add badges or sth to display the chosen filters to user even if dropdown is closed
-// 4) add a tooltip to let user know they will go to wikipedia if they click on the link in the description text
-// 5) add pagination (for more than 20 results)?
-// 6) add additional pictures from different api?!
-// 7) clean up code!!! would be nice to have some sort of structure here...
-// 8) add puppy logo and maybe background image or color
-// 9) add a fun easter egg (display random dog fact when clicking certain element or sth like that)
-// 10) make test page work (if there's enough time)
+// 1) add remove filter functionality to each badge? and remove all filters button!
+// 2) add a tooltip to let user know they will go to wikipedia if they click on the link in the description text? necessary? useful?
+// 3) add pagination (for more than 20 results)?
+// 4) add additional pictures from different api?! or just some hardcoded ones from canva/pixabay?
+// 5) add puppy logo and maybe background image or color
+// 6) add microanimation to heart icon (and cards when unliked and disappear from favorites list)?
+// 7) make test page work (if there's enough time) (and use filter object and function again to get results)
+// 8) add a fun easter egg (display random dog fact when clicking certain element or sth like that)
