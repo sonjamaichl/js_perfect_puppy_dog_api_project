@@ -53,7 +53,7 @@ function displaySpinner(display){
 }
 
 function clearAll(){
-    let elementsToClear = ['resultsList', 'sortOptions', 'filterOptions'];
+    let elementsToClear = ['resultsList', 'sortOptions', 'filterOptions', 'filterMessage'];
     elementsToClear.forEach(element => document.getElementById(element).innerText = '');
 }
 
@@ -62,6 +62,7 @@ function showResults() {
     displaySpinner('inline-block');
     clearAll();
     document.getElementById('searchMessage').style.display = 'none';
+    document.getElementById('filterMessage').style.display = 'none';
     dogs = [];  //empty old dogs list, if there was one...
     getData(getURL(getSearchInput));
 }
@@ -173,6 +174,21 @@ function showSearchMessage(dogs, error){
     }
   }
 
+//a function to display message to user after filtering letting them know which filters they chose and how many results match with the filters
+function showFilterMessage(filterCount, filterObject){        //filterCount is returned by createCards
+    const filterMessage = document.getElementById('filterMessage');
+    filterMessage.style.display = 'block';
+    filterMessage.innerText = (filterCount === 1)? `${filterCount} match found for chosen filters:` : `${filterCount} matches found for chosen filters:`;
+    filterMessage.setAttribute('class', 'alert alert-light');
+    console.log(`This is the filter object:`)
+    console.log(filterObject);
+    for (const [key, value] of Object.entries(filterObject)) {
+        if(value.length > 0){
+            let filterBadge = createElement('span', filterMessage, ['badge', 'bg-success', 'filter-badge'], `${nicerText(key)}: ${value.toString()}`);
+        }
+    }
+}
+
 //function to create and display one card for each dog in list of results (dogs)
 function createCards(dogs, parent){
     document.getElementById(parent).innerText = '';
@@ -181,6 +197,7 @@ function createCards(dogs, parent){
     //console.log(favoriteDogs);  //TEST
     //START LOOP
     let count = 0; //change to for-loop now that we actually need a counter???
+    let filterCount = 0;
     
     for (dog of dogs) {
     
@@ -193,6 +210,7 @@ function createCards(dogs, parent){
         const colDiv = createElement('div', resultsList, ['col'], 'none'); //adding classes 'd-flex' (and 'align-items-stretch'?) makes all cards the same height, but then they all open, when you only want to open one with "show more"
         if (parent === 'resultsList'){
         colDiv.style.display = (dog.matchesFilter === true)? 'inline-block' : 'none'; //only display dogs that match the chosen filter
+        filterCount += (dog.matchesFilter)? 1 : 0;
         }
         const card = createElement('div', colDiv, ['card'], 'none');
     
@@ -313,6 +331,9 @@ function createCards(dogs, parent){
         //console.log (dog.name + count);   //TESTING COUNTER
         count ++;
     }  //END Of FOR LOOP
+    console.log(`${filterCount} dogs found for your chosen filters`);   //TEST
+    return filterCount;
+        //if filterCount === 0 => display message to user!!! maybe display message anyways and tell them how many results match the filter?
  }  //END OF CREATE CARDS FUNCTION
 
 
@@ -380,7 +401,7 @@ function showSortingOptions(dogs, parent, buttonText, listName){      //parent a
     const sortOptions = document.getElementById(parent);
     sortOptions.innerText = '';
     //creating a button with a dropdown to show the sorting options
-    const sortResultsButton = createElement('button', sortOptions, ['btn', 'btn-secondary', 'dropdown-toggle'], `Sort ${buttonText} by`);
+    const sortResultsButton = createElement('button', sortOptions, ['btn', 'btn-success', 'dropdown-toggle'], `Sort ${buttonText} by`);
     sortResultsButton.type = 'button';
     sortResultsButton.setAttribute('data-bs-toggle', 'dropdown');
     sortResultsButton.setAttribute('aria-expanded', 'false');
@@ -411,8 +432,6 @@ function showSortingOptions(dogs, parent, buttonText, listName){      //parent a
             sortOptionInput.addEventListener('change', function(event){
                 getSelectedValueAndSort(event.target, listName, dogs);
             });
-
-
         }
         }
     }
@@ -476,7 +495,7 @@ function showFilteringOptions(filterObject, dogs) {
     const filterOptions = document.getElementById('filterOptions');
     filterOptions.innerText = '';
     //creating a button with a dropdown to show the filtering options
-    const filterResultsButton = createElement('button', filterOptions, ['btn', 'btn-secondary', 'dropdown-toggle'], `Filter results by`);
+    const filterResultsButton = createElement('button', filterOptions, ['btn', 'btn-success', 'dropdown-toggle'], `Filter results by`);
     filterResultsButton.type = 'button';
     filterResultsButton.setAttribute('data-bs-toggle', 'dropdown');
     filterResultsButton.setAttribute('aria-expanded', 'false');
@@ -512,6 +531,7 @@ function showFilteringOptions(filterObject, dogs) {
             console.log(filterObject);  
             //document.getElementById('resultsList')
             createCards(filterResults(filterObject, dogs), 'resultsList');
+            showFilterMessage(createCards(filterResults(filterObject, dogs), 'resultsList'), filterObject);
         })
     }
     }
@@ -571,11 +591,12 @@ return dogs;
 //to do & ideas:
 
 // 1) add promise all for wikiLinks fetch!
-// 2) add a message to let user know when no more results are displayed because no dogs match the chosen filters
-// 3) add a tooltip to let user know they will go to wikipedia if they click on the link in the description text
-// 4) add pagination (for more than 20 results)?
-// 5) add additional pictures from different api?!
-// 6) clean up code!!! would be nice to have some sort of structure here...
-// 7) add puppy logo and maybe background image or color
-// 8) add a fun easter egg (display random dog fact when clicking certain element or sth like that)
-// 9) make test page work (if there's enough time)
+// 2) add a message to let user know when no more results are displayed because no dogs match the chosen filters => counter?
+// 3) add badges or sth to display the chosen filters to user even if dropdown is closed
+// 4) add a tooltip to let user know they will go to wikipedia if they click on the link in the description text
+// 5) add pagination (for more than 20 results)?
+// 6) add additional pictures from different api?!
+// 7) clean up code!!! would be nice to have some sort of structure here...
+// 8) add puppy logo and maybe background image or color
+// 9) add a fun easter egg (display random dog fact when clicking certain element or sth like that)
+// 10) make test page work (if there's enough time)
