@@ -42,7 +42,9 @@ function getSearchInput() {
 function getURL(func){
     let basicURL = "https://api.api-ninjas.com/v1/dogs?";
     let searchParameter = showAll? "min_height=" : "name=";
-    return basicURL + searchParameter + func().toLowerCase() + "&offset=" + offset;
+    let newURL = basicURL + searchParameter + func().toLowerCase() + "&offset=" + offset;
+    console.log(newURL);
+    return newURL
 }
 
 //function to make spinner visible/invisible
@@ -79,17 +81,24 @@ async function getData(url) {
             newDog.favorite = false;
         //adding matchesFilter property to use later for filtering (true by default, can only be false after filters have been chosen)
             newDog.matchesFilter = true;
-        //getting wikipedia link for each dog from rapid api (before creating cards!)       ==> USE PROMISE ALL FOR THE WIKILINKS TO MAKE CODE FASTER!!!
-            const formattedDogName = newDog.name.split("").map(char => (char === ' ')? '_' : char).join("");
+        //getting wikipedia link for each dog from wikipedia api (before creating cards!)       ==> USE PROMISE ALL FOR THE WIKILINKS TO MAKE CODE FASTER!!!
+            const formattedDogName = newDog.name.split("").map(char => (char === ' ')? '_' : char).map(char => (char === "'")? '%27' : char).join("");
             let wikiQuery =  `https://en.wikipedia.org/w/api.php?action=query&prop=info&format=json&titles=${formattedDogName}`;
             let endpoint = 'https://corsproxy.io/?' + encodeURIComponent(wikiQuery);            //corsproxy.io is a free proxy server, it's necessary to prevent cors errors when sending a request to wikipedia api from a frontend application like in this case
             //console.log(endpoint);   //TEST
+            try{
             let response = await fetch(endpoint);
                     //console.log(response);
             let result = await response.json();
                     //console.log(result);    //TEST
             newDog.wikiLink = ('-1' in result.query.pages)? '' : `https://en.wikipedia.org/wiki/${formattedDogName}`;  //adding wikiLink property to each dog object to use later in createCards()-loop
-            //console.log(newDog.name + ": " + newDog.wikiLink); //TEST  
+            console.log(newDog.name + ": " + newDog.wikiLink); //TEST  
+            }
+            catch(error){
+                console.log(`error: couldn't fetch wikiLink for ${newDog.name}`)
+                newDog.wikiLink = '';
+                console.log(newDog.name + ": " + newDog.wikiLink); //TEST
+            }
             dogs.push(newDog);
         }
 
@@ -172,8 +181,9 @@ function createCards(dogs, parent){
     //create one div with classes 'col d-flex align-items-stretch' and another one inside it with class card for every dog + append to resultsList
         const resultsList = document.getElementById(parent);
         const colDiv = createElement('div', resultsList, ['col'], 'none'); //adding classes 'd-flex' (and 'align-items-stretch'?) makes all cards the same height, but then they all open, when you only want to open one with "show more"
-        //colDiv.id = dog.name;   //so we can access it later when filtering results to make cards disappear from resultsList
+        if (parent === 'resultsList'){
         colDiv.style.display = (dog.matchesFilter === true)? 'inline-block' : 'none'; //only display dogs that match the chosen filter
+        }
         const card = createElement('div', colDiv, ['card'], 'none');
     
     //put img of dog inside card and add card-img-top class + alt
