@@ -68,6 +68,7 @@ function showResults() {
 
 //function to get data from API and create cards for the search results 
 async function getData(url) {
+    try{
     let response = await fetch(url, {
         method: "GET",
         headers: {
@@ -101,7 +102,6 @@ async function getData(url) {
             }
             dogs.push(newDog);
         }
-
         if (newDogs.length === 20) {
                 //console.log('more than 20 results found, fetching again')
                 offset +=20;
@@ -122,6 +122,12 @@ async function getData(url) {
                 //make spinner invisible
                 displaySpinner('none');  
             }
+        }
+        catch(error){
+            console.log("error: couldn't fetch data from ninja dogs api");
+            displaySpinner('none');
+            showSearchMessage(dogs, error);
+        }
         }
     
 //a function to create new elements in the DOM
@@ -144,11 +150,15 @@ function createElement(htmlTag, parentEl, classesOfEl, innerTextOfEl, source, al
   }
 
 //a function displaying a message to user to let them know if and how many results were found
-function showSearchMessage(dogs){
+function showSearchMessage(dogs, error){
     const searchMessage = document.getElementById('searchMessage');
-    searchMessage.style.display = 'block';    //change to inline-block to make green box around message smaller
+    searchMessage.style.display = 'block';    //change to inline-block to make box around message smaller
     searchMessage.setAttribute('role', 'alert');
-    if (dogs.length === 0) {
+    if(error){
+        searchMessage.innerText = `Oopsies, something went wrong. Couldn't fetch data from API for your search request.`
+        searchMessage.setAttribute('class', 'alert alert-danger'); 
+    }
+    else if (dogs.length === 0) {
         searchMessage.innerText = `Sorry, no results found for "${getSearchInput()}".`
         searchMessage.setAttribute('class', 'alert alert-secondary');  
        
@@ -560,12 +570,12 @@ return dogs;
 
 //to do & ideas:
 
-// 1) add a try/catch block to the async functions fetching data from the API!!!
-// 2) add promise all for wikiLinks fetch!
-// 3) add a message to let user know when no more results are displayed because no dogs match the chosen filters
-// 4) add a tooltip to let user know they will go to wikipedia if they click on the link in the description text
-// 5) add pagination (for more than 20 results)?
-// 6) add additional pictures from different api?!
-// 7) clean up code!!! would be nice to have some sort of structure here...
-// 8) add puppy logo and maybe background image or color
-// 9) add a fun easter egg (display random dog fact when clicking certain element or sth like that)
+// 1) add promise all for wikiLinks fetch!
+// 2) add a message to let user know when no more results are displayed because no dogs match the chosen filters
+// 3) add a tooltip to let user know they will go to wikipedia if they click on the link in the description text
+// 4) add pagination (for more than 20 results)?
+// 5) add additional pictures from different api?!
+// 6) clean up code!!! would be nice to have some sort of structure here...
+// 7) add puppy logo and maybe background image or color
+// 8) add a fun easter egg (display random dog fact when clicking certain element or sth like that)
+// 9) make test page work (if there's enough time)
