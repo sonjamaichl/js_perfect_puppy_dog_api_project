@@ -55,7 +55,6 @@ async function getWikiLinks(dogs){
     dogs.map((dog, i) => dog.wikiLink = (wikiResponses[i] === '' || '-1' in wikiResponses[i].query.pages)? '' : `https://en.wikipedia.org/wiki/${formatDogNameForWiki(dog)}`);  //adding wikiLink property to each dog object to use later in createCards()-loop
 
     for(dog of dogs){
-        dog.size = calculateSize(dog); 
         let dogDescription = document.getElementById(`${dog.name} - description`);
         let textSnippet = (dog.min_life_expectancy === dog.max_life_expectancy)? `is a ${dog.size} dog with a life expectancy of about ${dog.min_life_expectancy} years.` : `is a ${dog.size} dog with a life expectancy of ${dog.min_life_expectancy} - ${dog.max_life_expectancy} years.`;
         dogDescription.innerHTML = (dog.wikiLink === '')? `The ${dog.name} ${textSnippet}` : `<span>The <a class="link-primary link-offset-2 link-underline-opacity-25 link-underline-opacity-100-hover" target="_blank" href="${dog.wikiLink}">${dog.name}</a> ${textSnippet}</span>`;
@@ -136,6 +135,8 @@ async function getData(url) {
             newDog.favorite = false;
         //adding matchesFilter property to use later for filtering (true by default, can only be false after filters have been chosen)
             newDog.matchesFilter = true;
+        //adding new property size to use later for creating the description text (and sorting)
+            newDog.size = calculateSize(newDog); 
         //adding wikiLink property but leaving it empty for now
             newDog.wikiLink = '';
         
@@ -159,6 +160,7 @@ async function getData(url) {
                 }
                 //create a card with image and info for each dog
                 createCards(dogs, 'resultsList'); //==> no loop needed here it's inside the function (could also be here, does it make a difference?)
+
                 //make spinner invisible
                 displaySpinner('none');  
                 getWikiLinks(dogs);
@@ -453,7 +455,7 @@ function showSortingOptions(dogs, parent, buttonText, listName){      //parent a
     const sortOptionsList = createElement('ul', sortOptions, ['dropdown-menu'], 'none');
     //creating a li element that contains a formcheck, input type radio and label for radio for each property to sort by
     for (const [key] of Object.entries(dogs[0])) {
-        const noSortOptions = ['favorite','image_link', 'coat_length', 'wikiLink', 'min_height_female', 'max_height_female', 'min_height_male', 'min_weight_female', 'max_weight_female', 'min_weight_male', 'min_life_expectancy', 'matchesFilter'];
+        const noSortOptions = ['favorite','image_link', 'coat_length', 'wikiLink', 'min_height_female', 'max_height_female', 'min_height_male', 'min_weight_female', 'max_weight_female', 'min_weight_male', 'matchesFilter'];
         if(noSortOptions.includes(key)){
             continue
         } else {
@@ -468,7 +470,8 @@ function showSortingOptions(dogs, parent, buttonText, listName){      //parent a
             sortOptionInput.value = `${key} ${sortOrder}`;
             sortOptionInput.id = `${key} ${sortOrder}`;
             let alphabeticalOrder = (i === 0)? 'Alphabet A-Z' : 'Alphabet Z-A';
-            let sortOptionLabelText = (key === 'name')? alphabeticalOrder : `${nicerText(key)}: ${orderText}`;
+            let propertyName = (key.includes('_male'))? key.slice(0, -5): key;
+            let sortOptionLabelText = (key === 'name')? alphabeticalOrder : `${nicerText(propertyName)}: ${orderText}`;
             const sortOptionLabel = createElement('label', sortOptionsFormCheck, ['form-check-label'], sortOptionLabelText);
             sortOptionLabel.for = `${key} ${sortOrder}`;
 
@@ -549,7 +552,10 @@ function showFilteringOptions(filterObject, dogs) {
     for (const [key] of Object.entries(filterObject)) { //for each filter property
         const filterOptionsListElement = createElement ('li', filterOptionsList, ['sort-option-li'], `${nicerText(key)}`);
         const filterOptionsCheckContainer = createElement ('div', filterOptionsListElement, ['container', 'd-flex'], 'none');
-        for (let i = 1; i <= 5; i++) { //creating 5 checkboxes & labels for each property
+        for (let i = 0; i <= 5; i++) { //creating 5 checkboxes & labels for each property
+        if(i === 0 && key === 'size'){
+                continue;
+        } else {
         const filterOptionsFormCheck = createElement ('div', filterOptionsCheckContainer, ['form-check'], 'none');
         const filterOptionsCheckbox = createElement ('input', filterOptionsFormCheck, ['form-check-input'], 'none');
         filterOptionsCheckbox.type = 'checkbox';
@@ -578,7 +584,7 @@ function showFilteringOptions(filterObject, dogs) {
             showFilterMessage(createCards(filterResults(filterObject, dogs), 'resultsList'), filterObject);
         })
     }
-    }
+    }}
 }
 
 function filterResults(filterObject, dogs){
