@@ -38,24 +38,26 @@
 
       <main>
         <div class="container">
-        <h1>Test: Which breed is best for you?</h1>
-        <div class="container d-flex"> <!--set flex properties to flex-direction row and space-between or around? check which bootstrap classes to apply for that-->
+        <h1 id="testHeading">Test: Which breed is best for you?</h1>
+        <div id="testText" class="container d-flex"> <!--set flex properties to flex-direction row and space-between or around? check which bootstrap classes to apply for that-->
         <p>Thinking about getting a dog? But which one? When it comes to dogs, it is obvious that different breeds have different needs.
           Not only are they very different in size, but they also come with very different character traits that depend not only on the individual character of the dog, but largely on the breed.
           Some dogs have a very high level of energy and need a lot of physical exercise. Others can be sweet little couch potatoes who just want to go outside to do their business and sniff around a little bit.
           Some are high maintenance and need a lot of grooming because of their coaat length, others are more easy care.</p>
         <!--add img tag here either with hard coded image of a dog or get random image(s) from API?-->
       </div>
-      <h5>Take the test to find out which breeds match best with your lifestyle and your expectations!</h5>
+      <h5 id ="testCallToAction">Take the test to find out which breeds match best with your lifestyle and your expectations!</h5>
       </div>
+      <div id="testResults" class="row g-3 row-cols-1 row-cols-sm-2 row-cols-md-3 row-cols-lg-4"></div>
       <!--TAKE TEST BUTTON HERE => TAKE TEST-->
-      <div class="container d-flex justify-content-center">
+      <div id ="testButtonContainer" class="container d-flex justify-content-center">
       <button type="button" id="testButton" class="btn btn-primary">Start Test</button>
-      </div>
+      
       
       <!--OVERLAY FOR TEST CONTENT HERE-->
       <div id="overlay" class = "overlay test-overlay modal-content" style = "display:none"></div>
 
+    </div>
       </main>
 
        

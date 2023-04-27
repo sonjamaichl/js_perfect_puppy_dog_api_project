@@ -7,6 +7,7 @@ console.log(testFilterObject);
 function activateTestButton(){
     const testButton = document.getElementById('testButton');
     testButton.addEventListener('click', function(){
+        testFilterObject = createFilterObject(exampleDogs);
         runTest(questions, 0);
     });
 }
@@ -53,32 +54,25 @@ function runTest(questions, i){
     if(i === questions.length-1){
         const getResultButton = createElement('button', document.getElementById('overlay'), ['btn', 'btn-primary'], 'Get result');
         getResultButton.addEventListener('click', function(){
-            document.getElementById('overlay').innerText = 'Test results:';
-            addCloseIcon();
             showAll = true;
             offset = 0;
-            
-            //h1: Test result: These breeds are best for you
-            //display some sort of search message?!
-            //make a container for the results (with grid!!!)
-            const testResults = createElement('div', document.getElementById('overlay'), ['row', 'g-3', 'row-cols-1', 'row-cols-sm-2', 'row-cols-md-3', 'row-cols-lg-4'], 'none');
-            testResults.id = 'testResults';
-            //add spinner???!!!
 
-            //get all dogs from API (fetch)
-            getResults(url, 'testResults');
-            //use filterobject to calculate results
-            //create cards for result dogs
+            //add info to overlay to let user know that results are being fetched
+            document.getElementById('overlay').innerText = 'Results are being calculated...';
+
+            //ADD SPINNER!!!
+
+            //get all dogs from API (fetch), filter and display matching dogs
+            getResults('testResults'); 
         })
     }
 }
 
 
-
  
 function addAnswers(questions, i){
-    console.log('testtesttest testfilterobject:');
-    console.log(testFilterObject);
+    //console.log('testtesttest testfilterobject:');
+    //console.log(testFilterObject);
     
     //add a container for answer inputs and labels (and a picture)
     const outerContainer = createElement('div', document.getElementById('overlay'), ['container', 'd-flex', 'justify-content-between', 'align-items-center'], 'none');
@@ -128,20 +122,18 @@ function getTestInput(event){
         if(event.target.checked){
             testFilterObject[event.target.name].push(event.target.value);
         } else {
-            testFilterObject[event.target.name].filter(event.target.value);
+            testFilterObject[event.target.name] = testFilterObject[event.target.name].filter(element => element !== event.target.value);
         }    
     } else {
-        if(event.target.checked){
+        //if(event.target.checked){
+            testFilterObject[event.target.name] = [];
             for (let v = 0; v < event.target.value.length; v++){
+                if (event.target.value[v] !== ','){
                 testFilterObject[event.target.name].push(event.target.value[v]);
+                }
             }
         }
-        else{
-            testFilterObject[event.target.name] = [];
-       //(event.target.checked)? event.target.value : [];  //something's wrong here => the values are not in an array anymore but are strings => change!!!
-        console.log(testFilterObject[event.target.name]);
-    }
-    }
+console.log('this is the current testfilterobject:');
 console.log(testFilterObject);
 }
 
@@ -193,10 +185,13 @@ function showProgress(userProgress){
     progressBar.style.width = `${userProgress}%`;
 }
 
-let url = "https://api.api-ninjas.com/v1/dogs?min_height=1&offset=0";
+
+
 let resultDogs = [];
 
-async function getResults(url, parent){
+async function getResults(){
+    let url = `https://api.api-ninjas.com/v1/dogs?min_height=1&offset=${offset}`;
+    console.log(url);
     let response = await fetch(url, {
         method: "GET",
         headers: {
@@ -213,24 +208,27 @@ async function getResults(url, parent){
         }
     if (newDogs.length === 20) {
         offset +=20;
-        getResults(url);  
+        getResults();  
     } else {
         offset = 0;
-        //show a message to user to let them know if and how many search results were found
-        //showSearchMessage(dogs);
-        //display a select form (dropdown) to choose sorting options for the search results (only if there's more than 1 result!)???
-        /*if (resultDogs.length > 1){
-            showSortingOptions(dogs, 'sortOptions', 'results', 'resultsList');
-            let filterObject = createFilterObject(dogs);
-            showFilteringOptions(filterObject, dogs);
-        }*/
-        //check which dogs match with the testFilterObject!!!
-        filterResults(testFilterObject, resultDogs);
-        //create a card with image and info for each dog
-        createCards(resultDogs, parent); 
-        console.log('These are your matches:');
-        console.log(resultDogs);
+    
+        //close overlay
+        displayElement('overlay', 'none');
+
+         //h1: change heading
+         document.getElementById('testHeading').innerText = 'Test result:'
+         //p: change text to info how many results were found
+         //document.getElementById('testText').innerText = (resultDogs.length !== 0)? `${resultDogs.length} breed(s) found that match with your lifestyle and expectations.` : 'Sorry, no breed seems to match with your lifestyle and expectations. Maybe you should think about getting a different pet...';
+         document.getElementById('testText').innerText = '';
+
+         //hiding the call to action and start test button
+         document.getElementById('testCallToAction').style.display = 'none';
+         document.getElementById('testButtonContainer').style.display = 'none';
+      
+        //filter resultsList and create a card with image and info for each matching dog
+        createCards(filterResults(testFilterObject, resultDogs), 'testResults');
 }
+//return resultDogs;
 }
 
 
@@ -239,6 +237,11 @@ async function getResults(url, parent){
 
 
     
-
+//TO FIX
+// 1) clicking previous should either display the previously checked values (if they are still in the test filter object) or remove them from the test filter object!!!
+// 2) where to display results (probably not on overlay???)
+// 3) design & responsiveness
+// 4) fix get results button
+// 5) display number of results to user!
 
     

@@ -253,7 +253,7 @@ function createCards(dogs, parent){
     //create one div with classes 'col d-flex align-items-stretch' and another one inside it with class card for every dog + append to resultsList
         const resultsList = document.getElementById(parent);
         const colDiv = createElement('div', resultsList, ['col'], 'none'); //adding classes 'd-flex' (and 'align-items-stretch'?) makes all cards the same height, but then they all open, when you only want to open one with "show more"
-        if (parent === 'resultsList'){
+        if (parent === 'resultsList' || parent === 'testResults'){
         colDiv.style.display = (dog.matchesFilter === true)? 'inline-block' : 'none'; //only display dogs that match the chosen filter
         filterCount += (dog.matchesFilter)? 1 : 0;
         }
@@ -505,7 +505,7 @@ createCards(sortResults(dogs, property, order), listName)  // only sort filtered
 function sortResults(array, property, order){
     sortedDogs = [];
         if (order === 'increasing'){
-            sortedDogs = array.sort((a, b) => (a[property] > b[property])? 1 : -1);
+            sortedDogs = array.sort((a, b) => (a[property] > b[property])? 1 : -1); //change??
         } else if (order === 'decreasing'){
             sortedDogs = array.sort((a, b) => (a[property] < b[property])? 1 : -1);
         } else {
@@ -603,13 +603,13 @@ function filterResults(filterObject, dogs){
     console.log(propertiesToCompare);
 
     for (let i = 0; i < dogs.length; i++){    //for each dog
-        dog.matchesFilter = false;
+        dogs[i].matchesFilter = false;
         count = 0;  //counting how many properties match
         
         for (const [key, value] of Object.entries(dogs[i])){
             if(propertiesToCompare.includes(key)){
-                if (filterObject[key].includes(value.toString())){       
-            console.log(dogs[i].name);
+                if (filterObject[key].includes(value.toString())){      
+            console.log(dogs[i].name + ' ' + key + ' ' + value + ' => property matches!');
             //console.log(filterObject[key]);
             //console.log(key);
             //console.log(value);
@@ -619,7 +619,7 @@ function filterResults(filterObject, dogs){
             //console.log(filterObject[key]);
             //console.log(key);
             //console.log(value);
-            console.log(dogs[i].name + key + value + ' => no match => compare next dog')
+            console.log(dogs[i].name + ' ' + key + ' ' + value + ' => no match => compare next dog')
             dogs[i].matchesFilter = false;
             console.log(dogs[i]);
             break;  //jumps out of the inner loop for this dog => goes to next iteration of outer loop (next dog)
@@ -628,6 +628,7 @@ function filterResults(filterObject, dogs){
     }
     if (count === propertiesToCompare.length){  //if all properties that were to check match, push this dog to filtered dogs array
         dogs[i].matchesFilter = true;
+        console.log('match found:')
         console.log(dogs[i]);
     }
 }
