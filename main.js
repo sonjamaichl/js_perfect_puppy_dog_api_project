@@ -238,8 +238,8 @@ function showFilterMessage(filterCount, filterObject){        //filterCount is r
 function createCards(dogs, parent){
     document.getElementById(parent).innerText = '';
     //getting current version of favoriteDogs array from localStorage 
-    let favoriteDogs = (typeof(localStorage.getItem('favoriteDogs'))=='undefined')? [] : JSON.parse(localStorage.getItem('favoriteDogs'));
-    //console.log(favoriteDogs);  //TEST
+    let favoriteDogs = (localStorage.getItem('favoriteDogs') === null)? [] : JSON.parse(localStorage.getItem('favoriteDogs'));
+    console.log(favoriteDogs);  //TEST
     //START LOOP
     let count = 0; //change to for-loop now that we actually need a counter???
     let filterCount = 0;
